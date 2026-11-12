@@ -109,13 +109,13 @@
         <div class="text-center max-w-3xl mx-auto mb-12">
             <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-4">
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                <span id="registry-status">みんなで作るオープンな星空図鑑（データ永続保存対応）</span>
+                <span id="registry-status">みんなで作るオープンな星空図鑑（いいね制限対応）</span>
             </div>
             <h1 id="hero-title" class="font-serif text-4xl sm:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-r from-white via-slate-200 to-cyan-200 bg-clip-text text-transparent">
-                夜空の星に、お気に入りの名前を残そう
+                夜空の星に、お気に入りの名前を残しよう
             </h1>
             <p id="hero-desc" class="text-slate-300 text-base sm:text-lg leading-relaxed">
-                登録した星はデバイスに保存され消えません。みんなで星に「いいね」やコメントを残して盛り上がろう！
+                登録した星はデバイスに保存され消えません。いいねは1人1回まで！みんなでコメントを残して盛り上がろう。
             </p>
         </div>
 
@@ -235,7 +235,6 @@
 
     <!-- JavaScript Application Logic -->
     <script>
-        // 初期データ（もしローカルストレージに保存データがなければこれを使う）
         const defaultStars = [
             { id: "CAU-001", name: "Aethelgard", ra: "03h 47m", dec: "+24° 15′", owner: "Orion Vanguard", date: "2026-01-15", notes: "穏やかな光を放つお気に入りのオレンジ色の星。", claps: 12, category: "favorite", comments: ["綺麗ですね！", "私も今度探してみます"] },
             { id: "CAU-002", name: "Vesper-9", ra: "18h 36m", dec: "-13° 49′", owner: "Lyra Collective", date: "2026-02-02", notes: "双眼鏡でも綺麗に見えるお気に入りのスポット。", claps: 8, category: "emotional", comments: ["双眼鏡で見てみます！"] },
@@ -245,11 +244,13 @@
             { id: "CAU-006", name: "Nexus-Alpha", ra: "17h 45m", dec: "-29° 00′", owner: "Core Vanguard", date: "2026-05-20", notes: "夏の天の川の近くで輝く特別な星。", claps: 22, category: "emotional", comments: ["夏の大三角の近くかな？"] }
         ];
 
-        // LocalStorageからデータを読み込む（なければ初期データ）
         let stars = JSON.parse(localStorage.getItem('cau_stars')) || defaultStars;
+        // ユーザーが「どの星にいいねしたか」を記憶するリスト
+        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps')) || [];
 
         function saveStars() {
             localStorage.setItem('cau_stars', JSON.stringify(stars));
+            localStorage.setItem('cau_user_claps', JSON.stringify(userClaps));
         }
 
         let currentLang = 'ja';
@@ -257,9 +258,9 @@
 
         const i18n = {
             ja: {
-                status: "みんなで作るオープンな星空図鑑（データ永続保存対応）",
-                title: "夜空の星に、お気に入りの名前を残そう",
-                desc: "登録した星はデバイスに保存され消えません。みんなで星に「いいね」やコメントを残して盛り上がろう！",
+                status: "みんなで作るオープンな星空図鑑（いいね制限対応）",
+                title: "夜空の星に、お気に入りの名前を残しよう",
+                desc: "登録した星はデバイスに保存され消えません。いいねは1人1回まで！みんなでコメントを残して盛り上がろう。",
                 searchPlaceholder: "星の名前やキーワードで検索...",
                 register: "星を登録する",
                 noResultsTitle: "星が見つかりませんでした",
@@ -273,12 +274,12 @@
                 btnSubmit: "図鑑に登録する",
                 gachaBtn: "今日の星ガチャを引く",
                 highlightTitle: "今夜のおすすめ観測",
-                highlightdesc: "空気が澄んだ夜は、Aethelgard（CAU-001）の方向をのんびり眺めてみよう。"
+                highlightDesc: "空気が澄んだ夜は、Aethelgard（CAU-001）の方向をのんびり眺めてみよう。"
             },
             en: {
-                status: "Community-driven Open Star Registry (Data Saved)",
+                status: "Community-driven Open Star Registry (Clap Limit)",
                 title: "Claim Your Place Among the Stars",
-                desc: "Registered stars are saved on your device. Leave claps and comments!",
+                desc: "Registered stars are saved on your device. One clap per star!",
                 searchPlaceholder: "Search by star name or keyword...",
                 register: "Register Star",
                 noResultsTitle: "No stars found",
@@ -318,17 +319,25 @@
             document.getElementById('btn-submit-registry').innerText = t.btnSubmit;
             document.getElementById('btn-gacha').innerText = t.gachaBtn;
             document.getElementById('highlight-title').innerText = t.highlightTitle;
+            document.getElementById('highlight-desc').innerText = t.highlightDesc;
 
             filterStars();
         }
 
         function detectInitialLanguage() { return 'ja'; }
 
-        // いいね（拍手）追加
+        // いいね（1人1回制限付き）
         function addClap(id) {
+            // すでにこの星にいいねしているかチェック
+            if (userClaps.includes(id)) {
+                alert(currentLang === 'ja' ? "この星にはすでに「観測したよ」を送っています！" : "You have already clapped for this star!");
+                return;
+            }
+
             const target = stars.find(s => s.id === id);
             if (target) {
                 target.claps = (target.claps || 0) + 1;
+                userClaps.push(id); // 記録する
                 saveStars();
                 filterStars();
             }
@@ -384,6 +393,14 @@
                     ? star.comments.map(c => `<div class="bg-cosmos-900/80 px-2.5 py-1 rounded-lg text-[11px] text-slate-300 mb-1 border border-cyan-500/10">💬 ${c}</div>`).join('')
                     : `<div class="text-[11px] text-slate-500 italic mb-1">まだコメントはありません</div>`;
 
+                // すでにいいね済みかどうかでボタンの見た目を変える
+                const alreadyClapped = userClaps.includes(star.id);
+                const clapBtnClass = alreadyClapped 
+                    ? "w-full py-2 mb-3 rounded-xl bg-cyan-500/20 border border-cyan-500/50 text-cyan-200 text-xs font-mono flex items-center justify-center space-x-2 cursor-default" 
+                    : "w-full py-2 mb-3 rounded-xl bg-cyan-950/50 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-mono transition-all flex items-center justify-center space-x-2 cursor-pointer";
+                
+                const clapBtnText = alreadyClapped ? "✨ 観測済み（いいね完了）" : "✨ 観測したよ（いいね）";
+
                 return `
                 <div class="glass-panel rounded-2xl p-6 relative overflow-hidden group hover:border-cyan-400/50 transition-all duration-300 shadow-xl flex flex-col justify-between">
                     <div class="absolute -right-10 -top-10 w-32 h-32 bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/10 transition-all"></div>
@@ -407,9 +424,9 @@
                             </div>
                         </div>
 
-                        <!-- 観測したよ（いいね）ボタン -->
-                        <button onclick="addClap('${star.id}')" class="w-full py-2 mb-3 rounded-xl bg-cyan-950/50 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-mono transition-all flex items-center justify-center space-x-2">
-                            <span>✨ 観測したよ（いいね）</span>
+                        <!-- 観測したよ（いいね）ボタン（1回制限付き） -->
+                        <button onclick="addClap('${star.id}')" class="${clapBtnClass}">
+                            <span>${clapBtnText}</span>
                             <span class="bg-cyan-500/30 px-2 py-0.5 rounded-full text-white">${star.claps || 0}</span>
                         </button>
 
@@ -479,7 +496,8 @@
                 comments: []
             };
             stars.unshift(newStar);
-            saveStars(); // 保存！
+            userClaps.push(newStar.id); // 自分自分が登録した星は最初から「いいね済み」にしておく
+            saveStars();
             closeRegisterModal();
             document.getElementById('starForm').reset();
             filterStars();
