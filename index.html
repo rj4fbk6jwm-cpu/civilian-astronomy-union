@@ -195,7 +195,7 @@
         <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-cyan-500/40 shadow-2xl text-center relative">
             <div class="text-4xl mb-3">👤</div>
             <h3 class="font-serif text-2xl font-bold text-white mb-2" id="name-modal-title">あなたの名前（ニックネーム）を教えてね</h3>
-            <p class="text-xs text-slate-300 mb-4" id="name-modal-desc">最初に「ooyosinobori」と入力した人だけが創設者公式マークを獲得できます！</p>
+            <p class="text-xs text-slate-300 mb-4" id="name-modal-desc">「ooyosinobori」と入力すると、創設者公式マークを獲得できます！</p>
             <form onsubmit="handleNameSubmit(event)" class="space-y-4">
                 <div>
                     <input type="text" id="inputUsername" required placeholder="例: ooyosinobori" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none text-center">
@@ -364,18 +364,16 @@
             return NG_WORDS.some(word => lower.includes(word));
         }
 
-        // 👑 創設者（最初に名前を設定したあなた）のユーザーネーム
         const CREATOR_NAME = "ooyosinobori";
 
-        // 🌟 準公式メンバーのリスト（LocalStorageで管理）
         let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v2')) || [];
 
         function isMainDeveloper(name) {
-            return name.toLowerCase() === CREATOR_NAME.toLowerCase();
+            return name && name.toLowerCase() === CREATOR_NAME.toLowerCase();
         }
 
         function isSemiOfficial(name) {
-            return semiOfficialUsers.includes(name);
+            return name && semiOfficialUsers.includes(name);
         }
 
         const defaultStars = [
@@ -387,15 +385,15 @@
             { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", owner: "ooyosinobori", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
         ];
 
-        let stars = JSON.parse(localStorage.getItem('cau_stars_v8')) || defaultStars;
-        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v8')) || [];
-        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v8')) || [];
+        let stars = JSON.parse(localStorage.getItem('cau_stars_v9')) || defaultStars;
+        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v9')) || [];
+        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v9')) || [];
         let currentUserName = localStorage.getItem('cau_username') || '';
 
         function saveStars() {
-            localStorage.setItem('cau_stars_v8', JSON.stringify(stars));
-            localStorage.setItem('cau_user_claps_v8', JSON.stringify(userClaps));
-            localStorage.setItem('cau_feedbacks_v8', JSON.stringify(feedbacks));
+            localStorage.setItem('cau_stars_v9', JSON.stringify(stars));
+            localStorage.setItem('cau_user_claps_v9', JSON.stringify(userClaps));
+            localStorage.setItem('cau_feedbacks_v9', JSON.stringify(feedbacks));
             localStorage.setItem('cau_username', currentUserName);
             localStorage.setItem('cau_semi_officials_v2', JSON.stringify(semiOfficialUsers));
         }
@@ -439,194 +437,12 @@
                 successBtn: "やったね！",
                 noResultsTitle: "天体が見つかりませんでした",
                 noResultsDesc: "条件に一致する天体やキーワードが見つかりませんでした。"
-            },
-            en: {
-                status: "Community-driven Space Registry",
-                title: "Claim Your Place Among the Cosmos",
-                desc: "Official badge for the first user 'ooyosinobori'!",
-                searchKeyword: "Search celestial objects...",
-                registerBtn: "Register Object",
-                gachaBtn: "Space Gacha",
-                highlightTitle: "Tonight's Highlight",
-                highlightDesc: "On a clear night, take a moment to look toward Aethelgard (CAU-001).",
-                sortNew: "🕒 Newest",
-                sortPop: "🔥 Popular",
-                typeAll: "✨ All",
-                typeStar: "⭐ Star",
-                typePlanet: "🪐 Planet",
-                typeNebula: "🌌 Nebula",
-                typeBH: "🕳️ Black Hole",
-                modalTitle: "Register a New Object",
-                labelType: "Object Type",
-                labelName: "Object Name",
-                labelImgUrl: "Photo/Image URL (Optional)",
-                labelRA: "Right Ascension (RA)",
-                labelDec: "Declination (DEC)",
-                labelOwner: "Registrant",
-                labelNotes: "Personal Notes",
-                submitReg: "Submit to Registry",
-                feedbackBtnNav: "Contact Creator",
-                feedbackLinkFooter: "Send Feedback to Creator",
-                feedbackModalTitle: "Send Message to Creator",
-                feedbackDesc: "Tell us your thoughts or ideas!",
-                feedbackSubmit: "Send Message",
-                successTitle: "Registered!",
-                successDesc: "Your object has been added to the cosmos!",
-                successBtn: "Awesome!",
-                noResultsTitle: "No objects found",
-                noResultsDesc: "No celestial objects match your query."
-            },
-            zh: {
-                status: "社区驱动的太空星空图鉴",
-                title: "在宇宙天体中留下你喜爱的名字",
-                desc: "授予最早设置 ooyosinobori 的用户的官方标志！",
-                searchKeyword: "搜索天体名称...",
-                registerBtn: "注册天体",
-                gachaBtn: "宇宙抽奖",
-                highlightTitle: "今夜推荐观测",
-                highlightDesc: "在空气清澈的夜晚，不妨眺望一下 Aethelgard (CAU-001)。",
-                sortNew: "🕒 最新",
-                sortPop: "🔥 最热",
-                typeAll: "✨ 全部",
-                typeStar: "⭐ 恒星",
-                typePlanet: "🪐 行星",
-                typeNebula: "🌌 星云",
-                typeBH: "🕳️ 黑洞",
-                modalTitle: "注册新天体",
-                labelType: "天体类型",
-                labelName: "天体名称",
-                labelImgUrl: "图片链接 (可选)",
-                labelRA: "赤经 (RA)",
-                labelDec: "赤纬 (DEC)",
-                labelOwner: "注册人",
-                labelNotes: "个人备忘录",
-                submitReg: "提交到图鉴",
-                feedbackBtnNav: "联系作者",
-                feedbackLinkFooter: "向作者发送改进建议",
-                feedbackModalTitle: "给作者发送消息",
-                feedbackDesc: "请告诉我们您的想法或建议！",
-                feedbackSubmit: "发送消息",
-                successTitle: "注册成功！",
-                successDesc: "新天体已成功刻入宇宙图鉴！",
-                successBtn: "太棒了！",
-                noResultsTitle: "未找到天体",
-                noResultsDesc: "没有找到符合条件的天体。"
-            },
-            es: {
-                status: "Registro Espacial Comunitario",
-                title: "Deja tu nombre favorito en el cosmos",
-                desc: "¡Insignia oficial para el primer usuario ooyosinobori!",
-                searchKeyword: "Buscar objetos celestes...",
-                registerBtn: "Registrar Objeto",
-                gachaBtn: "Gacha Espacial",
-                highlightTitle: "Destacado de la noche",
-                highlightDesc: "En una noche despejada, observa hacia Aethelgard (CAU-001).",
-                sortNew: "🕒 Recientes",
-                sortPop: "🔥 Populares",
-                typeAll: "✨ Todos",
-                typeStar: "⭐ Estrella",
-                typePlanet: "🪐 Planeta",
-                typeNebula: "🌌 Nébula",
-                typeBH: "🕳️ Agujero Negro",
-                modalTitle: "Registrar Nuevo Objeto",
-                labelType: "Tipo de Objeto",
-                labelName: "Nombre",
-                labelImgUrl: "URL de Imagen (Opcional)",
-                labelRA: "Ascensión Recta (RA)",
-                labelDec: "Declinación (DEC)",
-                labelOwner: "Propietario",
-                labelNotes: "Notas personales",
-                submitReg: "Enviar al Registro",
-                feedbackBtnNav: "Contactar",
-                feedbackLinkFooter: "Enviar comentarios al creador",
-                feedbackModalTitle: "Enviar mensaje al creador",
-                feedbackDesc: "¡Envía tus comentarios o ideas!",
-                feedbackSubmit: "Enviar Mensaje",
-                successTitle: "¡Registrado!",
-                successDesc: "¡Tu objeto ha sido añadido al cosmos!",
-                successBtn: "¡Genial!",
-                noResultsTitle: "No se encontraron objetos",
-                noResultsDesc: "Ningún objeto coincide con tu búsqueda."
-            },
-            fr: {
-                status: "Registre Spatial Communautaire",
-                title: "Laissez votre empreinte dans le cosmos",
-                desc: "Badge officiel pour le premier utilisateur ooyosinobori !",
-                searchKeyword: "Rechercher des objets...",
-                registerBtn: "Enregistrer",
-                gachaBtn: "Gacha Spatial",
-                highlightTitle: "À observer ce soir",
-                highlightDesc: "Par une nuit claire, contemplez Aethelgard (CAU-001).",
-                sortNew: "🕒 Plus récents",
-                sortPop: "🔥 Plus populaires",
-                typeAll: "✨ Tous",
-                typeStar: "⭐ Étoile",
-                typePlanet: "🪐 Planète",
-                typeNebula: "🌌 Nébuleuse",
-                typeBH: "🕳️ Trou Noir",
-                modalTitle: "Nouvel Objet Céleste",
-                labelType: "Type d'objet",
-                labelName: "Nom",
-                labelImgUrl: "URL de l'image (Optionnel)",
-                labelRA: "Ascension Droite (RA)",
-                labelDec: "Déclinaison (DEC)",
-                labelOwner: "Propriétaire",
-                labelNotes: "Notes personnelles",
-                submitReg: "Ajouter au registre",
-                feedbackBtnNav: "Contacter",
-                feedbackLinkFooter: "Envoyer un message au créateur",
-                feedbackModalTitle: "Envoyer un message au créateur",
-                feedbackDesc: "Partagez vos impressions ou vos idées !",
-                feedbackSubmit: "Envoyer",
-                successTitle: "Enregistré !",
-                successDesc: "Votre objet a été gravé dans le cosmos !",
-                successBtn: "Super !",
-                noResultsTitle: "Aucun objet trouvé",
-                noResultsDesc: "Aucun objet ne correspond à votre recherche."
-            },
-            de: {
-                status: "Gemeinschaftliches Sternenregister",
-                title: "Hinterlasse deinen Namen im Kosmos",
-                desc: "Offizielles Abzeichen für den ersten Nutzer ooyosinobori!",
-                searchKeyword: "Himmelskörper suchen...",
-                registerBtn: "Objekt registrieren",
-                gachaBtn: "Weltraum-Gacha",
-                highlightTitle: "Heutiges Highlight",
-                highlightDesc: "Blicke in einer klaren Nacht Richtung Aethelgard (CAU-001).",
-                sortNew: "🕒 Neueste",
-                sortPop: "🔥 Beliebteste",
-                typeAll: "✨ Alle",
-                typeStar: "⭐ Stern",
-                typePlanet: "🪐 Planet",
-                typeNebula: "🌌 Nebel",
-                typeBH: "🕳️ Schwarzes Loch",
-                modalTitle: "Neues Objekt registrieren",
-                labelType: "Objekttyp",
-                labelName: "Name",
-                labelImgUrl: "Bild-URL (Optional)",
-                labelRA: "Rektaszension (RA)",
-                labelDec: "Deklination (DEC)",
-                labelOwner: "Eigentümer",
-                labelNotes: "Persönliche Notizen",
-                submitReg: "Ins Register eintragen",
-                feedbackBtnNav: "Kontakt",
-                feedbackLinkFooter: "Feedback an den Ersteller senden",
-                feedbackModalTitle: "Nachricht an den Ersteller",
-                feedbackDesc: "Teile uns deine Gedanken oder Ideen mit!",
-                feedbackSubmit: "Nachricht senden",
-                successTitle: "Registriert!",
-                successDesc: "Dein Objekt wurde dem Kosmos hinzugefügt!",
-                successBtn: "Super!",
-                noResultsTitle: "Keine Objekte gefunden",
-                noResultsDesc: "Kein Himmelskörper entspricht deiner Suche."
             }
         };
 
         function changeLanguage(lang) {
             currentLang = lang;
-            document.getElementById('langSelect').value = lang;
-            const t = i18n[lang];
-
+            const t = i18n[lang] || i18n['ja'];
             document.getElementById('registry-status').innerText = t.status;
             document.getElementById('hero-title').innerText = t.title;
             document.getElementById('hero-desc').innerText = t.desc;
@@ -656,7 +472,7 @@
             document.getElementById('label-notes').innerText = t.labelNotes;
             document.getElementById('btn-submit-registry').innerText = t.submitReg;
             document.getElementById('nav-feedback-btn').innerText = t.feedbackBtnNav;
-            document.getElementById('footer-feedback-link').innerText = t.footerFeedbackLink || "製作者へ改善メッセージを送る";
+            document.getElementById('footer-feedback-link').innerText = t.footerFeedbackLink;
             document.getElementById('feedback-modal-title').innerText = t.feedbackModalTitle;
             document.getElementById('feedback-desc').innerText = t.feedbackDesc;
             document.getElementById('feedback-submit-btn').innerText = t.feedbackSubmit;
@@ -665,13 +481,12 @@
             document.getElementById('success-btn').innerText = t.successBtn;
             document.getElementById('no-results-title').innerText = t.noResultsTitle;
             document.getElementById('no-results-desc').innerText = t.noResultsDesc;
-
             filterStars();
         }
 
         function checkUsername() {
             if (!currentUserName) {
-                // 初回は自動で「ooyosinobori」を初期値としてセットしてあげるか、入力を促す
+                // 初回は自動で「ooyosinobori」をセットしてあげる安心設計
                 currentUserName = "ooyosinobori";
                 saveStars();
             }
@@ -684,13 +499,13 @@
 
             if (isMainDeveloper(currentUserName)) {
                 displayEl.innerHTML = `${currentUserName} <span class="text-amber-400 ml-1 font-bold">⚡ OFFICIAL</span>`;
-                adminBtn.classList.remove('hidden'); // 創設者ooyosinobori君だけ管理ボタンが出る！
+                if (adminBtn) adminBtn.classList.remove('hidden');
             } else if (isSemiOfficial(currentUserName)) {
                 displayEl.innerHTML = `${currentUserName} <span class="text-cyan-300 ml-1 font-bold">⭐ SEMI-OFFICIAL</span>`;
-                adminBtn.classList.add('hidden');
+                if (adminBtn) adminBtn.classList.add('hidden');
             } else {
                 displayEl.innerText = currentUserName;
-                adminBtn.classList.add('hidden');
+                if (adminBtn) adminBtn.classList.add('hidden');
             }
         }
 
@@ -718,7 +533,6 @@
             filterStars();
         }
 
-        // 👑 称号管理モーダル (創設者専用)
         function openAdminModal() {
             updateSemiOfficialList();
             document.getElementById('adminModal').classList.remove('hidden');
@@ -758,7 +572,7 @@
 
         function addClap(id) {
             if (userClaps.includes(id)) {
-                alert(currentLang === 'ja' ? "すでに「観測したよ」を送っています！" : "Already clapped!");
+                alert("すでに「観測したよ」を送っています！");
                 return;
             }
             const target = stars.find(s => s.id === id);
@@ -776,7 +590,7 @@
             const commentText = input.value.trim();
             
             if (containsNGWord(commentText)) {
-                alert(currentLang === 'ja' ? "⚠️ 不適切な言葉が含まれているため送信できません。" : "Inappropriate words detected.");
+                alert("⚠️ 不適切な言葉が含まれているため送信できません。");
                 return;
             }
 
@@ -797,7 +611,7 @@
         }
 
         function deleteStar(id) {
-            if (confirm(currentLang === 'ja' ? "この天体を削除しますか？" : "Delete this object?")) {
+            if (confirm("この天体を削除しますか？")) {
                 stars = stars.filter(s => s.id !== id);
                 saveStars();
                 filterStars();
@@ -808,10 +622,12 @@
             currentType = type;
             ['all', 'star', 'planet', 'nebula', 'blackhole'].forEach(t => {
                 const btn = document.getElementById(`type-${t}`);
-                if (t === type) {
-                    btn.className = 'px-3 py-1.5 rounded-lg bg-cyan-500 text-cosmos-950 font-bold transition-all';
-                } else {
-                    btn.className = 'px-3 py-1.5 rounded-lg bg-cosmos-900/80 text-slate-300 hover:text-white border border-cyan-500/20 transition-all';
+                if (btn) {
+                    if (t === type) {
+                        btn.className = 'px-3 py-1.5 rounded-lg bg-cyan-500 text-cosmos-950 font-bold transition-all';
+                    } else {
+                        btn.className = 'px-3 py-1.5 rounded-lg bg-cosmos-900/80 text-slate-300 hover:text-white border border-cyan-500/20 transition-all';
+                    }
                 }
             });
             filterStars();
@@ -822,7 +638,7 @@
             const noResults = document.getElementById('noResults');
             const counter = document.getElementById('stats-counter');
 
-            counter.innerText = currentLang === 'ja' ? `登録天体: ${data.length}件` : `Objects: ${data.length}`;
+            if (counter) counter.innerText = `登録天体: ${data.length}件`;
 
             if (data.length === 0) {
                 grid.innerHTML = '';
@@ -834,7 +650,7 @@
             grid.innerHTML = data.map(star => {
                 const commentsHtml = (star.comments && star.comments.length > 0) 
                     ? star.comments.map(c => `<div class="bg-cosmos-900/80 px-2.5 py-1 rounded-lg text-[11px] text-slate-300 mb-1 border border-cyan-500/10">💬 ${c}</div>`).join('')
-                    : `<div class="text-[11px] text-slate-500 italic mb-1">${currentLang === 'ja' ? 'まだコメントはありません' : 'No comments yet'}</div>`;
+                    : `<div class="text-[11px] text-slate-500 italic mb-1">まだコメントはありません</div>`;
 
                 const alreadyClapped = userClaps.includes(star.id);
                 const clapBtnClass = alreadyClapped 
@@ -848,7 +664,6 @@
                 if (star.type === 'nebula') typeBadge = "🌌 星雲";
                 if (star.type === 'blackhole') typeBadge = "🕳️ ブラックホール";
 
-                // ⚡ 創設者 or ⭐ 準公式マークの判定
                 let ownerDisplay = `<span class="text-cyan-400">${star.owner}</span>`;
                 if (isMainDeveloper(star.owner)) {
                     ownerDisplay = `<span class="text-amber-400 font-bold flex items-center space-x-1"><span>${star.owner}</span><span class="bg-amber-500/20 border border-amber-400/50 text-amber-300 px-1.5 py-0.2 rounded text-[9px]">⚡ OFFICIAL</span></span>`;
@@ -895,7 +710,7 @@
                                 ${commentsHtml}
                             </div>
                             <form onsubmit="addComment(event, '${star.id}')" class="flex gap-1">
-                                <input type="text" id="comment-input-${star.id}" placeholder="${currentLang === 'ja' ? 'コメントを残す...' : 'Add comment...'}" class="w-full px-3 py-1.5 rounded-lg glass-input text-xs text-slate-100 placeholder-slate-500 focus:outline-none">
+                                <input type="text" id="comment-input-${star.id}" placeholder="コメントを残す..." class="w-full px-3 py-1.5 rounded-lg glass-input text-xs text-slate-100 placeholder-slate-500 focus:outline-none">
                                 <button type="submit" class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-mono whitespace-nowrap">OK</button>
                             </form>
                         </div>
@@ -931,7 +746,7 @@
             if (stars.length === 0) return;
             const randomStar = stars[Math.floor(Math.random() * stars.length)];
             document.getElementById('gachaStarName').innerText = `${randomStar.name} (${randomStar.id})`;
-            document.getElementById('gachaStarNotes').innerText = `(" + `「${randomStar.notes}」\n(Owner: ${randomStar.owner})`;
+            document.getElementById('gachaStarNotes').innerText = `「${randomStar.notes}」\n(Owner: ${randomStar.owner})`;
             document.getElementById('gachaModal').classList.remove('hidden');
         }
         function closeStarGacha() { document.getElementById('gachaModal').classList.add('hidden'); }
@@ -961,7 +776,7 @@
             saveStars();
             closeFeedbackModal();
             document.getElementById('feedbackMessage').value = '';
-            alert(currentLang === 'ja' ? "製作者へメッセージを送信しました！ありがとうございます！✨" : "Message sent! Thank you! ✨");
+            alert("製作者へメッセージを送信しました！ありがとうございます！✨");
         }
 
         function handleRegisterSubmit(e) {
@@ -969,8 +784,8 @@
             const notesInput = document.getElementById('inputNotes').value;
             const nameInput = document.getElementById('inputName').value;
 
-            if (containsNGWord(notesInput) || containsNGWord(nameInput)) {
-                alert(currentLang === 'ja' ? "⚠️ 不適切な言葉が含まれているため登録できません。" : "Inappropriate words detected.");
+            if (containsNGWord(notesInput) || containsNGWord(nameItem = nameInput)) {
+                alert("⚠️ 不適切な言葉が含まれているため登録できません。");
                 return;
             }
 
@@ -1022,7 +837,7 @@
             ctx.clearRect(0, 0, width, height);
             starsArr.forEach(s => {
                 s.alpha += s.speed;
-                if (s.alpha > 1 || s.alpha.toFixed(1) < 0.1) s.speed = -s.speed;
+                if (s.alpha > 1 || s.alpha < 0.1) s.speed = -s.speed;
                 ctx.beginPath();
                 ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(226, 232, 240, ${s.alpha * 0.75})`;
