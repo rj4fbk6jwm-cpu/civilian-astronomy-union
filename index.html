@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Civilian Astronomy Union (CAU) | Open Star Registry</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter, Space Mono, Cinzel (for poetic star titles) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                        serif: ['Cinzel', 'serif'],
+                    },
+                    colors: {
+                        cosmos: {
+                            950: '#04060d',
+                            900: '#070b19',
+                            800: '#0e162e',
+                            700: '#172347',
+                        },
+                        nebula: {
+                            cyan: '#38bdf8',
+                            gold: '#fbbf24',
+                            purple: '#a855f7'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #04060d;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        /* Subtle animated starfield canvas */
+        #starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        /* Glassmorphism cards */
+        .astro-card {
+            background: rgba(14, 22, 46, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(56, 189, 248, 0.18);
+            transition: all 0.25s ease;
+        }
+        .astro-card:hover {
+            border-color: rgba(56, 189, 248, 0.55);
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.12);
+            transform: translateY(-2px);
+        }
+        .glow-text {
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.45);
+        }
+        .gold-glow {
+            text-shadow: 0 0 18px rgba(251, 191, 36, 0.4);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-sky-500 selection:text-white">
+
+    <!-- Background Starfield Canvas -->
+    <canvas id="starfield"></canvas>
+
+    <!-- Navigation Bar -->
+    <header class="sticky top-0 z-40 border-b border-sky-500/15 bg-cosmos-950/80 backdrop-blur-md">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-3 group">
+                <!-- Custom SVG Observatory Logo -->
+                <div class="w-9 h-9 rounded-lg bg-sky-500/10 border border-sky-400/40 flex items-center justify-center group-hover:border-sky-400 transition">
+                    <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="9" stroke-width="1.5" stroke-dasharray="3 3"/>
+                        <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                        <path stroke-linecap="round" stroke-width="1.5" d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
+                    </svg>
+                </div>
+                <div>
+                    <span class="font-mono font-bold tracking-wider text-white text-sm sm:text-base block leading-none">C.A.U.</span>
+                    <span class="font-mono text-[10px] text-sky-400 tracking-widest uppercase">Civilian Astronomy Union</span>
+                </div>
+            </a>
+
+            <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-slate-300">
+                <a href="#manifesto" data-i18n="navManifesto" class="hover:text-sky-400 transition">Manifesto</a>
+                <a href="#registry" data-i18n="navRegistry" class="hover:text-sky-400 transition">Star Registry</a>
+                <a href="#charter" data-i18n="navCharter" class="hover:text-sky-400 transition">Charter</a>
+            </nav>
+
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Cosmic Language Switcher -->
+                <div class="relative flex items-center">
+                    <svg class="w-4 h-4 text-sky-400 absolute left-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                    </svg>
+                    <select id="languageSelector" onchange="changeLanguage(this.value)" aria-label="Select Language"
+                        class="pl-8 pr-6 py-2 rounded-lg bg-cosmos-900/90 border border-sky-500/30 hover:border-sky-400 text-xs font-mono text-sky-200 focus:outline-none focus:border-sky-400 cursor-pointer appearance-none transition">
+                        <option value="en">EN</option>
+                        <option value="ja">日本語</option>
+                        <option value="es">ES</option>
+                        <option value="fr">FR</option>
+                        <option value="de">DE</option>
+                        <option value="zh">中文</option>
+                    </select>
+                    <svg class="w-3 h-3 text-slate-400 absolute right-2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </div>
+
+                <button onclick="openModal()" class="px-3.5 sm:px-4 py-2 rounded-lg bg-sky-500 hover:bg-sky-400 text-cosmos-950 font-semibold text-xs sm:text-sm transition shadow-lg shadow-sky-500/20 flex items-center gap-1.5">
+                    <span data-i18n="btnProposeNav">+ Propose Name</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="relative pt-16 pb-20 sm:pt-24 sm:pb-28 px-4 sm:px-6 max-w-6xl mx-auto text-center">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-400/30 text-sky-300 font-mono text-xs mb-6">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span data-i18n="heroBadge">DECENTRALIZED SKY NETWORK • INITIATED IN JAPAN</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-tight">
+            <span data-i18n="heroTitlePrefix">Reclaiming the Night Sky from</span> <span data-i18n="heroTitleHighlight" class="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-cyan-300 to-amber-300 glow-text">Bureaucratic Barcodes</span>
+        </h1>
+
+        <p data-i18n="heroSubtitle" class="max-w-2xl mx-auto text-slate-300 text-base sm:text-lg md:text-xl leading-relaxed mb-10 font-light">
+            Official committees lock the cosmos behind soulless serial numbers like <code class="font-mono text-sky-300 bg-sky-950/80 px-1.5 py-0.5 rounded text-sm">TYC 4532-1209-1</code>. 
+            We are an independent global alliance giving the stars poetic names humanity can actually love.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+            <a href="#registry" data-i18n="btnExplore" class="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-white text-cosmos-950 font-bold text-sm sm:text-base hover:bg-sky-100 transition shadow-xl">
+                Explore Civilian Registry
+            </a>
+            <button onclick="openModal()" data-i18n="btnSubmitHero" class="w-full sm:w-auto px-7 py-3.5 rounded-xl astro-card text-sky-300 hover:text-white font-semibold text-sm sm:text-base transition">
+                Submit a Star Name
+            </button>
+        </div>
+
+        <!-- Live Telemetry / Stats Bar -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+            <div class="astro-card rounded-xl p-4 text-center">
+                <div id="stat-stars" class="font-mono text-2xl sm:text-3xl font-bold text-white">06</div>
+                <div data-i18n="statLabel1" class="text-xs font-mono text-slate-400 uppercase tracking-wider mt-1">Cataloged Stars</div>
+            </div>
+            <div class="astro-card rounded-xl p-4 text-center">
+                <div data-i18n="statValue2" class="font-mono text-2xl sm:text-3xl font-bold text-sky-400">OPEN</div>
+                <div data-i18n="statLabel2" class="text-xs font-mono text-slate-400 uppercase tracking-wider mt-1">Network Status</div>
+            </div>
+            <div class="astro-card rounded-xl p-4 text-center">
+                <div class="font-mono text-2xl sm:text-3xl font-bold text-amber-400">100%</div>
+                <div data-i18n="statLabel3" class="text-xs font-mono text-slate-400 uppercase tracking-wider mt-1">Civilian Owned</div>
+            </div>
+            <div class="astro-card rounded-xl p-4 text-center">
+                <div class="font-mono text-2xl sm:text-3xl font-bold text-emerald-400">0%</div>
+                <div data-i18n="statLabel4" class="text-xs font-mono text-slate-400 uppercase tracking-wider mt-1">Gatekeeping</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Manifesto Section -->
+    <section id="manifesto" class="py-16 px-4 sm:px-6 max-w-5xl mx-auto">
+        <div class="astro-card rounded-2xl p-6 sm:p-10 md:p-12 border-l-4 border-l-sky-400">
+            <div data-i18n="manifestoTag" class="font-mono text-xs text-sky-400 uppercase tracking-widest mb-2">// 01. THE MANIFESTO</div>
+            <h2 data-i18n="manifestoTitle" class="text-2xl sm:text-3xl font-bold text-white mb-5">Why We Reject Alphanumeric Serials</h2>
+            <div class="space-y-4 text-slate-300 text-sm sm:text-base leading-relaxed">
+                <p data-i18n="manifestoP1">
+                    Human brains evolved to remember myths, stories, and poetic names—not spreadsheet barcodes. Calling a massive, burning sun <span class="font-mono text-sky-300">"PSR B1919+21"</span> is like naming your dog <span class="font-mono text-slate-400">"Canine-0482."</span>
+                </p>
+                <p data-i18n="manifestoP2">
+                    Even worse, centralized bodies claim an "address number" helps point telescopes, yet you still have to query a database just to know if it's East or West. Meanwhile, predatory websites sell fake certificates for $50 that nobody recognizes.
+                </p>
+                <p data-i18n="manifestoP3" class="text-white font-medium">
+                    The Civilian Astronomy Union (CAU) bridges the gap: an open, democratic, zero-cost registry run by independent sky-watchers worldwide.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Star Registry Section -->
+    <section id="registry" class="py-16 px-4 sm:px-6 max-w-6xl mx-auto">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+            <div>
+                <div data-i18n="registryTag" class="font-mono text-xs text-amber-400 uppercase tracking-widest mb-2">// 02. OPEN DATABASE</div>
+                <h2 data-i18n="registryTitle" class="text-3xl sm:text-4xl font-bold text-white">Civilian Star Registry</h2>
+                <p data-i18n="registrySubtitle" class="text-slate-400 text-sm mt-1">Cross-referencing bureaucratic catalog numbers with human-given names.</p>
+            </div>
+
+            <!-- Search & Filter Controls -->
+            <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                <div class="relative flex-grow sm:w-64">
+                    <input type="text" id="searchInput" oninput="filterStars()" placeholder="Search ID, name, or @user..." 
+                        class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-cosmos-900/90 border border-sky-500/30 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-sky-400 font-mono">
+                    <svg class="w-4 h-4 text-slate-500 absolute left-3 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <select id="statusFilter" onchange="filterStars()" 
+                    class="px-4 py-2.5 rounded-xl bg-cosmos-900/90 border border-sky-500/30 text-sm text-slate-200 focus:outline-none focus:border-sky-400 font-mono">
+                    <option value="ALL" data-i18n="filterAll">All Statuses</option>
+                    <option value="ADOPTED" data-i18n="filterAdopted">Adopted (Official CAU)</option>
+                    <option value="POLLING" data-i18n="filterPolling">Open for Poll</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Star Grid -->
+        <div id="starGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Cards injected dynamically via JavaScript -->
+        </div>
+
+        <!-- Empty Search State -->
+        <div id="emptyState" class="hidden text-center py-16 astro-card rounded-2xl">
+            <p data-i18n="emptyText" class="font-mono text-slate-400 mb-4">No celestial objects match your query in the current registry.</p>
+            <button onclick="openModal()" data-i18n="emptyBtn" class="px-5 py-2.5 rounded-lg bg-sky-500/20 border border-sky-400/50 text-sky-300 hover:bg-sky-500/30 text-sm font-mono transition">
+                + Be the first to name it
+            </button>
+        </div>
+    </section>
+
+    <!-- The 3 Golden Rules (Charter) -->
+    <section id="charter" class="py-16 px-4 sm:px-6 max-w-6xl mx-auto">
+        <div class="text-center max-w-2xl mx-auto mb-12">
+            <div data-i18n="charterTag" class="font-mono text-xs text-sky-400 uppercase tracking-widest mb-2">// 03. THE CHARTER</div>
+            <h2 data-i18n="charterTitle" class="text-3xl font-bold text-white">Three Golden Rules of Naming</h2>
+            <p data-i18n="charterSubtitle" class="text-slate-400 text-sm mt-2">To keep our registry respected, poetic, and free from chaos, every entry follows three simple principles.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Rule 1 -->
+            <div class="astro-card rounded-2xl p-6">
+                <div data-i18n="rule1Tag" class="font-mono text-sky-400 text-sm font-bold mb-3">RULE 01 // RESPECT</div>
+                <h3 data-i18n="rule1Title" class="text-xl font-bold text-white mb-2">Honor Ancient Names</h3>
+                <p data-i18n="rule1Desc" class="text-slate-400 text-sm leading-relaxed">
+                    We never overwrite classic, culturally beloved names like Sirius, Vega, or Betelgeuse. Our mission targets unnamed stars trapped behind alphanumeric catalog codes.
+                </p>
+            </div>
+            <!-- Rule 2 -->
+            <div class="astro-card rounded-2xl p-6">
+                <div data-i18n="rule2Tag" class="font-mono text-amber-400 text-sm font-bold mb-3">RULE 02 // DIGNITY</div>
+                <h3 data-i18n="rule2Title" class="text-xl font-bold text-white mb-2">Poetic & Meaningful</h3>
+                <p data-i18n="rule2Desc" class="text-slate-400 text-sm leading-relaxed">
+                    No corporate advertisements, spam, or offensive slurs. Every proposed name should carry a story, visual inspiration, or timeless human emotion worthy of a sun.
+                </p>
+            </div>
+            <!-- Rule 3 -->
+            <div class="astro-card rounded-2xl p-6">
+                <div data-i18n="rule3Tag" class="font-mono text-emerald-400 text-sm font-bold mb-3">RULE 03 // DEMOCRACY</div>
+                <h3 data-i18n="rule3Title" class="text-xl font-bold text-white mb-2">Consensus by Vote</h3>
+                <p data-i18n="rule3Desc" class="text-slate-400 text-sm leading-relaxed">
+                    When multiple observers propose names for the same star, the community decides via public X (Twitter) polls. The people's choice becomes permanent history.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-sky-500/15 mt-16 py-12 px-4 sm:px-6 bg-cosmos-950/90">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="text-center md:text-left">
+                <div class="font-mono font-bold text-white tracking-wider">CIVILIAN ASTRONOMY UNION (CAU)</div>
+                <p data-i18n="footerSub" class="text-xs font-mono text-slate-400 mt-1">Independent Observation Network • Initiated in Japan • Open to the World</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <!-- Replace '#' with your actual X (Twitter) profile URL when hosting -->
+                <a href="https://x.com" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-lg astro-card text-xs font-mono text-sky-300 hover:text-white flex items-center gap-2">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    <span data-i18n="footerBtn">Follow & Vote on X</span>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive Modal: Propose a Star Name -->
+    <div id="proposalModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="astro-card bg-cosmos-900 border-sky-400/40 rounded-2xl max-w-lg w-full p-6 sm:p-8 relative shadow-2xl max-h-[92vh] overflow-y-auto">
+            <button onclick="closeModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white p-1">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
+            <div data-i18n="modalTag" class="font-mono text-xs text-sky-400 uppercase tracking-widest mb-1">// SUBMIT PROPOSAL</div>
+            <h3 data-i18n="modalTitle" class="text-2xl font-bold text-white mb-2">Name an Unnamed Star</h3>
+            <p data-i18n="modalSubtitle" class="text-xs text-slate-400 mb-6">Preview your entry in the registry and generate a ready-to-post X submission.</p>
+
+            <form id="proposalForm" onsubmit="handleProposal(event)" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label data-i18n="labelCatalogId" class="block font-mono text-xs text-slate-300 mb-1">Official Catalog ID *</label>
+                        <input type="text" id="inputCatalogId" required placeholder="e.g. HD 209458" 
+                            class="w-full px-3.5 py-2.5 rounded-lg bg-cosmos-950 border border-sky-500/30 text-sm text-white font-mono focus:outline-none focus:border-sky-400">
+                    </div>
+                    <div>
+                        <label data-i18n="labelCivilianName" class="block font-mono text-xs text-slate-300 mb-1">Proposed Civilian Name *</label>
+                        <input type="text" id="inputCivilianName" required placeholder="e.g. Solaris Whisper" 
+                            class="w-full px-3.5 py-2.5 rounded-lg bg-cosmos-950 border border-sky-500/30 text-sm text-amber-300 font-serif font-semibold focus:outline-none focus:border-amber-400">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label data-i18n="labelConstellation" class="block font-mono text-xs text-slate-300 mb-1">Constellation / Region</label>
+                        <input type="text" id="inputConstellation" placeholder="e.g. Pegasus" 
+                            class="w-full px-3.5 py-2.5 rounded-lg bg-cosmos-950 border border-sky-500/30 text-sm text-white focus:outline-none focus:border-sky-400">
+                    </div>
+                    <div>
+                        <label data-i18n="labelHandle" class="block font-mono text-xs text-slate-300 mb-1">Your X Handle *</label>
+                        <input type="text" id="inputHandle" required placeholder="@stargazer" 
+                            class="w-full px-3.5 py-2.5 rounded-lg bg-cosmos-950 border border-sky-500/30 text-sm text-sky-300 font-mono focus:outline-none focus:border-sky-400">
+                    </div>
+                </div>
+
+                <div>
+                    <label data-i18n="labelStory" class="block font-mono text-xs text-slate-300 mb-1">Meaning / Origin Story *</label>
+                    <textarea id="inputStory" required rows="2" placeholder="Why does this star deserve this name?" 
+                        class="w-full px-3.5 py-2 rounded-lg bg-cosmos-950 border border-sky-500/30 text-sm text-white focus:outline-none focus:border-sky-400"></textarea>
+                </div>
+
+                <button type="submit" data-i18n="btnGenerate" class="w-full py-3 rounded-xl bg-gradient-to-r from-sky-500 to-cyan-400 hover:from-sky-400 hover:to-cyan-300 text-cosmos-950 font-bold text-sm transition shadow-lg">
+                    Add Preview & Generate X Post
+                </button>
+            </form>
+
+            <!-- Generated Tweet Output Box (Appears after submit) -->
+            <div id="tweetResultBox" class="hidden mt-5 pt-5 border-t border-sky-500/20">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                    <span data-i18n="tweetReadyMsg" class="font-mono text-xs text-emerald-400">✓ Added to local preview! Copy & post on X:</span>
+                    <!-- Toggle between Current Language and English for Tweet -->
+                    <div id="tweetLangToggleWrap" class="flex items-center gap-1 bg-cosmos-950 p-0.5 rounded-lg border border-sky-500/25">
+                        <button type="button" id="btnTweetLocal" onclick="setTweetLanguage('local')" class="px-2 py-0.5 rounded text-[10px] font-mono bg-sky-500 text-cosmos-950 font-bold transition">Local</button>
+                        <button type="button" id="btnTweetEn" onclick="setTweetLanguage('en')" class="px-2 py-0.5 rounded text-[10px] font-mono text-slate-300 hover:text-white transition">EN</button>
+                    </div>
+                </div>
+                <textarea id="generatedTweet" readonly rows="4" class="w-full p-3 rounded-lg bg-cosmos-950 border border-emerald-500/40 text-xs font-mono text-slate-200 mb-3"></textarea>
+                <div class="flex gap-2">
+                    <button onclick="copyTweetText()" id="copyBtn" class="flex-1 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-cosmos-950 font-bold text-xs font-mono transition">
+                        Copy Post Text
+                    </button>
+                    <a id="directTweetLink" href="#" target="_blank" rel="noopener noreferrer" data-i18n="btnOpenX" class="flex-1 py-2.5 rounded-lg bg-white hover:bg-slate-200 text-cosmos-950 font-bold text-xs font-mono text-center transition">
+                        Open X to Post ↗
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 0. Multi-Language Dictionary (EN, JA, ES, FR, DE, ZH) ---
+        const translations = {
+            en: {
+                navManifesto: "Manifesto",
+                navRegistry: "Star Registry",
+                navCharter: "Charter",
+                btnProposeNav: "+ Propose Name",
+                heroBadge: "DECENTRALIZED SKY NETWORK • INITIATED IN JAPAN",
+                heroTitlePrefix: "Reclaiming the Night Sky from",
+                heroTitleHighlight: "Bureaucratic Barcodes",
+                heroSubtitle: `Official committees lock the cosmos behind soulless serial numbers like <code class="font-mono text-sky-300 bg-sky-950/80 px-1.5 py-0.5 rounded text-sm">TYC 4532-1209-1</code>. We are an independent global alliance giving the stars poetic names humanity can actually love.`,
+                btnExplore: "Explore Civilian Registry",
+                btnSubmitHero: "Submit a Star Name",
+                statLabel1: "Cataloged Stars",
+                statValue2: "OPEN",
+                statLabel2: "Network Status",
+                statLabel3: "Civilian Owned",
+                statLabel4: "Gatekeeping",
+                manifestoTag: "// 01. THE MANIFESTO",
+                manifestoTitle: "Why We Reject Alphanumeric Serials",
+                manifestoP1: `Human brains evolved to remember myths, stories, and poetic names—not spreadsheet barcodes. Calling a massive, burning sun <span class="font-mono text-sky-300">"PSR B1919+21"</span> is like naming your dog <span class="font-mono text-slate-400">"Canine-0482."</span>`,
+                manifestoP2: `Even worse, centralized bodies claim an "address number" helps point telescopes, yet you still have to query a database just to know if it's East or West. Meanwhile, predatory websites sell fake certificates for $50 that nobody recognizes.`,
+                manifestoP3: `The Civilian Astronomy Union (CAU) bridges the gap: an open, democratic, zero-cost registry run by independent sky-watchers worldwide.`,
+                registryTag: "// 02. OPEN DATABASE",
+                registryTitle: "Civilian Star Registry",
+                registrySubtitle: "Cross-referencing bureaucratic catalog numbers with human-given names.",
+                searchPlaceholder: "Search ID, name, or @user...",
+                filterAll: "All Statuses",
+                filterAdopted: "Adopted (Official CAU)",
+                filterPolling: "Open for Poll",
+                emptyText: "No celestial objects match your query in the current registry.",
+                emptyBtn: "+ Be the first to name it",
+                badgeAdopted: "● OFFICIAL CAU",
+                badgePolling: "◐ OPEN FOR POLL",
+                cardCatalogTooltip: "Former Bureaucratic ID",
+                cardNamedBy: "Named by",
+                cardSubmissionCoords: "Civilian Submission",
+                charterTag: "// 03. THE CHARTER",
+                charterTitle: "Three Golden Rules of Naming",
+                charterSubtitle: "To keep our registry respected, poetic, and free from chaos, every entry follows three simple principles.",
+                rule1Tag: "RULE 01 // RESPECT",
+                rule1Title: "Honor Ancient Names",
+                rule1Desc: "We never overwrite classic, culturally beloved names like Sirius, Vega, or Betelgeuse. Our mission targets unnamed stars trapped behind alphanumeric catalog codes.",
+                rule2Tag: "RULE 02 // DIGNITY",
+                rule2Title: "Poetic & Meaningful",
+                rule2Desc: "No corporate advertisements, spam, or offensive slurs. Every proposed name should carry a story, visual inspiration, or timeless human emotion worthy of a sun.",
+                rule3Tag: "RULE 03 // DEMOCRACY",
+                rule3Title: "Consensus by Vote",
+                rule3Desc: "When multiple observers propose names for the same star, the community decides via public X (Twitter) polls. The people's choice becomes permanent history.",
+                footerSub: "Independent Observation Network • Initiated in Japan • Open to the World",
+                footerBtn: "Follow & Vote on X",
+                modalTag: "// SUBMIT PROPOSAL",
+                modalTitle: "Name an Unnamed Star",
+                modalSubtitle: "Preview your entry in the registry and generate a ready-to-post X submission.",
+                labelCatalogId: "Official Catalog ID *",
+                placeholderCatalogId: "e.g. HD 209458",
+                labelCivilianName: "Proposed Civilian Name *",
+                placeholderCivilianName: "e.g. Solaris Whisper",
+                labelConstellation: "Constellation / Region",
+                placeholderConstellation: "e.g. Pegasus",
+                labelHandle: "Your X Handle *",
+                placeholderHandle: "@stargazer",
+                labelStory: "Meaning / Origin Story *",
+                placeholderStory: "Why does this star deserve this name?",
+                btnGenerate: "Add Preview & Generate X Post",
+                tweetReadyMsg: "✓ Added to local preview! Copy & post on X:",
+                btnCopy: "Copy Post Text",
+                btnCopied: "Copied! ✓",
+                btnOpenX: "Open X to Post ↗",
+                tweetTemplate: (catId, civName, story) => `I propose naming "${catId}" ➡️ "${civName}" in the Civilian Astronomy Union registry! 🌌✨\n\nStory: ${story}\n\n#CivilianAstronomyUnion #NightSky #Astronomy`
+            },
+            ja: {
+                navManifesto: "宣言・理念",
+                navRegistry: "民間星名登録簿",
+                navCharter: "命名憲章",
+                btnProposeNav: "+ 星の名前を提案",
+                heroBadge: "分散型天体観測ネットワーク • 日本発・世界規模プロジェクト",
+                heroTitlePrefix: "夜空をお役所仕事の",
+                heroTitleHighlight: "バーコード番号から解放しよう",
+                heroSubtitle: `既存の公式機関は、広大な宇宙の星々を <code class="font-mono text-sky-300 bg-sky-950/80 px-1.5 py-0.5 rounded text-sm">TYC 4532-1209-1</code> のような無機質なシリアル番号に閉じ込めています。私たちは世界中の観測者と繋がり、人類が本当に愛せる詩的な名前を星々に贈る独立連合です。`,
+                btnExplore: "民間星名カタログを見る",
+                btnSubmitHero: "新しい星名を提案する",
+                statLabel1: "登録済みの星",
+                statValue2: "開放中",
+                statLabel2: "ネットワーク状態",
+                statLabel3: "市民・民間主導",
+                statLabel4: "権威による独占",
+                manifestoTag: "// 01. THE MANIFESTO（宣言）",
+                manifestoTitle: "なぜ私たちは英数字のシリアル番号を拒むのか",
+                manifestoP1: `人間の脳は神話や物語、詩的な名前を覚えるように進化したのであって、表計算ソフトのバーコードを覚えるようにはできていません。燃え盛る巨大な太陽を <span class="font-mono text-sky-300">「PSR B1919+21」</span> と呼ぶのは、愛犬に <span class="font-mono text-slate-400">「イヌ科-0482」</span> と名付けるようなものです。`,
+                manifestoP2: `さらに皮肉なことに、公式機関は「住所番号として便利」と言いますが、結局データベースを引かなければ東にあるのか西にあるのかさえ分かりません。その一方で、怪しい業者が50ドルで何の価値もない偽の命名証明書を売りつけています。`,
+                manifestoP3: `民間天文学連合（CAU）はそのギャップを埋めます。世界中の独立系観測者が運営し、誰もが無料で参加できるオープンで民主的な星名登録簿です。`,
+                registryTag: "// 02. OPEN DATABASE（公開データベース）",
+                registryTitle: "民間星名レジストリ",
+                registrySubtitle: "無粋なカタログ番号と、人間が愛を込めて名付けた新しい名前の対照表。",
+                searchPlaceholder: "番号・星名・@IDで検索...",
+                filterAll: "すべてのステータス",
+                filterAdopted: "正式採用 (Official CAU)",
+                filterPolling: "Xで投票受付中",
+                emptyText: "現在の登録簿に一致する天体が見つかりませんでした。",
+                emptyBtn: "+ この星の名付け親になる",
+                badgeAdopted: "● CAU 正式採用",
+                badgePolling: "◐ 投票受付中",
+                cardCatalogTooltip: "従来の無粋なカタログ番号",
+                cardNamedBy: "命名者:",
+                cardSubmissionCoords: "民間からの新規提案",
+                charterTag: "// 03. THE CHARTER（命名ルール）",
+                charterTitle: "命名における3つの黄金律",
+                charterSubtitle: "この登録簿が世界中の人々から敬意を持たれ、詩的で美しいものであり続けるためのシンプルな3つの原則です。",
+                rule1Tag: "RULE 01 // 敬意",
+                rule1Title: "古来の伝統名を尊重する",
+                rule1Desc: "シリウスやベガ、ベテルギウスなど、古くから人類に親しまれてきた伝統的な固有名は上書きしません。記号だけの「名前のない星」を対象とします。",
+                rule2Tag: "RULE 02 // 品格",
+                rule2Title: "詩的で意味のある名前を",
+                rule2Desc: "企業の宣伝、スパム、誰かを傷つける言葉は除外します。提案されるすべての名前には、一つの太陽にふさわしい物語や情景、普遍的な感情が込められているべきです。",
+                rule3Tag: "RULE 03 // 民主主義",
+                rule3Title: "投票による合意形成",
+                rule3Desc: "同じ星に複数の名前が提案された場合、X（旧Twitter）の公開投票によってコミュニティ全体で決定します。人々の支持を集めた名前が永遠の歴史に刻まれます。",
+                footerSub: "独立系天体観測ネットワーク • 日本発 • 全世界の観測者へ開かれた連合",
+                footerBtn: "Xでフォロー＆投票に参加",
+                modalTag: "// SUBMIT PROPOSAL（命名提案）",
+                modalTitle: "名前のない星に命を吹き込む",
+                modalSubtitle: "カタログへの追加プレビューを表示し、Xへの投稿用テキストを自動生成します。",
+                labelCatalogId: "公式カタログ番号 *",
+                placeholderCatalogId: "例: HD 209458",
+                labelCivilianName: "提案する新しい星名 *",
+                placeholderCivilianName: "例: Solaris Whisper",
+                labelConstellation: "星座 / 領域",
+                placeholderConstellation: "例: Pegasus（ペガスス座）",
+                labelHandle: "あなたのXアカウントID *",
+                placeholderHandle: "@stargazer",
+                labelStory: "名前の由来・ストーリー *",
+                placeholderStory: "なぜこの星にこの名前がふさわしいのですか？",
+                btnGenerate: "プレビューに追加してX投稿文を作成",
+                tweetReadyMsg: "✓ プレビューに追加しました！コピーしてXにポストしよう：",
+                btnCopy: "投稿文をコピー",
+                btnCopied: "コピー完了！ ✓",
+                btnOpenX: "Xを開いて投稿する ↗",
+                tweetTemplate: (catId, civName, story) => `民間天文学連合（CAU）の登録簿にて、「${catId}」に新しい名前『${civName}』を提案します！🌌✨\n\n由来: ${story}\n\n#CivilianAstronomyUnion #民間天文学連合 #宇宙`
+            },
+            es: {
+                navManifesto: "Manifiesto",
+                navRegistry: "Registro Estelar",
+                navCharter: "Estatutos",
+                btnProposeNav: "+ Proponer Nombre",
+                heroBadge: "RED CELESTE DESCENTRALIZADA • INICIADA EN JAPÓN",
+                heroTitlePrefix: "Rescatando el Cielo Nocturno de los",
+                heroTitleHighlight: "Códigos de Barras Burocráticos",
+                heroSubtitle: `Los comités oficiales encierran el cosmos tras números de serie sin alma como <code class="font-mono text-sky-300 bg-sky-950/80 px-1.5 py-0.5 rounded text-sm">TYC 4532-1209-1</code>. Somos una alianza global independiente que devuelve a las estrellas nombres poéticos que la humanidad pueda amar.`,
+                btnExplore: "Explorar Registro Civil",
+                btnSubmitHero: "Proponer Nombre de Estrella",
+                statLabel1: "Estrellas Catalogadas",
+                statValue2: "ABIERTO",
+                statLabel2: "Estado de la Red",
+                statLabel3: "Propiedad Civil",
+                statLabel4: "Burocracia",
+                manifestoTag: "// 01. EL MANIFIESTO",
+                manifestoTitle: "Por Qué Rechazamos los Códigos Alfanuméricos",
+                manifestoP1: `El cerebro humano evolucionó para recordar mitos, historias y nombres poéticos, no códigos de barras. Llamar a un sol gigantesco <span class="font-mono text-sky-300">"PSR B1919+21"</span> es como llamar a tu perro <span class="font-mono text-slate-400">"Canino-0482"</span>.`,
+                manifestoP2: `Peor aún, dicen que un número sirve de "dirección", pero igual debes consultar una base de datos para saber si está al Este o al Oeste. Mientras tanto, sitios web venden certificados falsos por $50 que nadie reconoce.`,
+                manifestoP3: `La Unión Astronómica Civil (CAU) cierra esa brecha: un registro abierto, democrático y gratuito dirigido por observadores independientes de todo el mundo.`,
+                registryTag: "// 02. BASE DE DATOS ABIERTA",
+                registryTitle: "Registro Estelar Civil",
+                registrySubtitle: "Cruzando números de catálogo burocráticos con nombres dados por la humanidad.",
+                searchPlaceholder: "Buscar ID, nombre o @usuario...",
+                filterAll: "Todos los Estados",
+                filterAdopted: "Adoptada (Oficial CAU)",
+                filterPolling: "Abierta a Votación",
+                emptyText: "Ningún objeto celeste coincide con tu búsqueda en el registro actual.",
+                emptyBtn: "+ Sé el primero en nombrarla",
+                badgeAdopted: "● OFICIAL CAU",
+                badgePolling: "◐ EN VOTACIÓN",
+                cardCatalogTooltip: "Antiguo ID Burocrático",
+                cardNamedBy: "Nombrada por",
+                cardSubmissionCoords: "Propuesta Civil",
+                charterTag: "// 03. LOS ESTATUTOS",
+                charterTitle: "Tres Reglas de Oro para Nombrar",
+                charterSubtitle: "Para mantener nuestro registro poético, respetado y libre de caos, cada entrada sigue tres principios simples.",
+                rule1Tag: "REGLA 01 // RESPETO",
+                rule1Title: "Honrar Nombres Antiguos",
+                rule1Desc: "Nunca sobrescribimos nombres clásicos como Sirio, Vega o Betelgeuse. Nuestra misión se enfoca en estrellas atrapadas tras códigos numéricos.",
+                rule2Tag: "REGLA 02 // DIGNIDAD",
+                rule2Title: "Poético y Significativo",
+                rule2Desc: "Sin publicidad comercial, spam ni ofensas. Cada nombre propuesto debe llevar una historia o emoción humana digna de una estrella.",
+                rule3Tag: "REGLA 03 // DEMOCRACIA",
+                rule3Title: "Consenso por Votación",
+                rule3Desc: "Cuando varios observadores proponen nombres para la misma estrella, la comunidad decide mediante encuestas públicas en X (Twitter).",
+                footerSub: "Red de Observación Independiente • Iniciada en Japón • Abierta al Mundo",
+                footerBtn: "Seguir y Votar en X",
+                modalTag: "// ENVIAR PROPUESTA",
+                modalTitle: "Nombra una Estrella Sin Nombre",
+                modalSubtitle: "Previsualiza tu entrada y genera una publicación lista para enviar en X.",
+                labelCatalogId: "ID Oficial de Catálogo *",
+                placeholderCatalogId: "ej. HD 209458",
+                labelCivilianName: "Nombre Civil Propuesto *",
+                placeholderCivilianName: "ej. Susurro Solar",
+                labelConstellation: "Constelación / Región",
+                placeholderConstellation: "ej. Pegaso",
+                labelHandle: "Tu Usuario de X *",
+                placeholderHandle: "@observador",
+                labelStory: "Significado / Historia *",
+                placeholderStory: "¿Por qué esta estrella merece este nombre?",
+                btnGenerate: "Previsualizar y Generar Post en X",
+                tweetReadyMsg: "✓ ¡Añadido a la vista previa! Copia y publica en X:",
+                btnCopy: "Copiar Texto",
+                btnCopied: "¡Copiado! ✓",
+                btnOpenX: "Abrir X para Publicar ↗",
+                tweetTemplate: (catId, civName, story) => `¡Propongo nombrar "${catId}" ➡️ "${civName}" en el registro de la Unión Astronómica Civil! 🌌✨\n\nHistoria: ${story}\n\n#CivilianAstronomyUnion #Astronomia #CieloNocturno`
+            },
+            fr: {
+                navManifesto: "Manifeste",
+                navRegistry: "Registre Stellaire",
+                navCharter: "Charte",
+                btnProposeNav: "+ Proposer un Nom",
+                heroBadge: "RÉSEAU CÉLESTE DÉCENTRALISÉ • INITIÉ AU JAPON",
+                heroTitlePrefix: "Libérer le Ciel Nocturne des",
+                heroTitleHighlight: "Codes-Barres Bureaucratiques",
+                heroSubtitle: `Les comités officiels enferment le cosmos derrière des numéros de série sans âme comme <code class="font-mono text-sky-300 bg-sky-950/80 px-1.5 py-0.5 rounded text-sm">TYC 4532-1209-1</code>. Nous sommes une alliance mondiale indépendante redonnant aux étoiles des noms poétiques.`,
+                btnExplore: "Explorer le Registre Civil",
+                btnSubmitHero: "Proposer un Nom d'Étoile",
+                statLabel1: "Étoiles Cataloguées",
+                statValue2: "OUVERT",
+                statLabel2: "Statut du Réseau",
+                statLabel3: "Propriété Civile",
+                statLabel4: "Bureaucratie",
+                manifestoTag: "// 01. LE MANIFESTE",
+                manifestoTitle: "Pourquoi Nous Rejetons les Séries Alphanumériques",
+                manifestoP1: `Le cerveau humain a évolué pour retenir des mythes et des noms poétiques, pas des codes-barres. Appeler un soleil géant <span class="font-mono text-sky-300">« PSR B1919+21 »</span> revient à appeler son chien <span class="font-mono text-slate-400">« Canidé-0482 »</span>.`,
+                manifestoP2: `Pire encore, on prétend qu'un numéro sert d'« adresse », alors qu'il faut consulter une base de données pour savoir si l'étoile est à l'Est ou à l'Ouest. Pendant ce temps, des sites vendent de faux certificats à 50 $ sans aucune valeur.`,
+                manifestoP3: `L'Union Astronomique Civile (CAU) comble ce fossé : un registre ouvert, démocratique et gratuit géré par des observateurs indépendants du monde entier.`,
+                registryTag: "// 02. BASE DE DONNÉES OUVERTE",
+                registryTitle: "Registre Stellaire Civil",
+                registrySubtitle: "Association des numéros de catalogue bureaucratiques avec des noms donnés par l'humanité.",
+                searchPlaceholder: "Rechercher ID, nom ou @pseudo...",
+                filterAll: "Tous les Statuts",
+                filterAdopted: "Adoptée (Officiel CAU)",
+                filterPolling: "Ouverte au Vote",
+                emptyText: "Aucun objet céleste ne correspond à votre recherche.",
+                emptyBtn: "+ Soyez le premier à la nommer",
+                badgeAdopted: "● OFFICIEL CAU",
+                badgePolling: "◐ VOTE OUVERT",
+                cardCatalogTooltip: "Ancien ID Bureaucratique",
+                cardNamedBy: "Nommée par",
+                cardSubmissionCoords: "Proposition Civile",
+                charterTag: "// 03. LA CHARTE",
+                charterTitle: "Trois Règles d'Or de Nomination",
+                charterSubtitle: "Pour garder notre registre poétique, respecté et harmonieux, chaque entrée suit trois principes simples.",
+                rule1Tag: "RÈGLE 01 // RESPECT",
+                rule1Title: "Honorer les Noms Anciens",
+                rule1Desc: "Nous ne remplaçons jamais les noms classiques comme Sirius, Véga ou Bételgeuse. Notre mission vise les étoiles piégées derrière des codes.",
+                rule2Tag: "RÈGLE 02 // DIGNITÉ",
+                rule2Title: "Poétique et Significatif",
+                rule2Desc: "Pas de publicité, de spam ou d'insultes. Chaque nom proposé doit porter une histoire ou une émotion humaine digne d'un soleil.",
+                rule3Tag: "RÈGLE 03 // DÉMOCRATIE",
+                rule3Title: "Consensus par le Vote",
+                rule3Desc: "Lorsque plusieurs noms sont proposés pour une même étoile, la communauté tranche via des sondages publics sur X (Twitter).",
+                footerSub: "Réseau d'Observation Indépendant • Initié au Japon • Ouvert au Monde",
+                footerBtn: "Suivre et Voter sur X",
+                modalTag: "// SOUMETTRE UNE PROPOSITION",
+                modalTitle: "Nommer une Étoile Sans Nom",
+                modalSubtitle: "Prévisualisez votre entrée et générez un post prêt à publier sur X.",
+                labelCatalogId: "ID Officiel du Catalogue *",
+                placeholderCatalogId: "ex. HD 209458",
+                labelCivilianName: "Nom Civil Proposé *",
+                placeholderCivilianName: "ex. Murmure Solaire",
+                labelConstellation: "Constellation / Région",
+                placeholderConstellation: "ex. Pégase",
+                labelHandle: "Votre Identifiant X *",
+                placeholderHandle: "@astronome",
+                labelStory: "Signification / Histoire *",
+                placeholderStory: "Pourquoi cette étoile mérite-t-elle ce nom ?",
+                btnGenerate: "Prévisualiser et Générer le Post X",
+                tweetReadyMsg: "✓ Ajouté à l'aperçu ! Copiez et publiez sur X :",
+                btnCopy: "Copier le Texte",
+                btnCopied: "Copié ! ✓",
+                btnOpenX: "Ouvrir X pour Publier ↗",
+                tweetTemplate: (catId, civName, story) => `Je propose de nommer « ${catId} » ➡️ « ${civName} » dans le registre de l'Union Astronomique Civile ! 🌌✨\n\nHistoire : ${story}\n\n#CivilianAstronomyUnion #Astronomie #CielNocturne`
+            },
+            de: {
+                navManifesto: "Manifest",
+                navRegistry: "Sternenregister",
+                navCharter: "Charta",
+                btnProposeNav: "+ Namen vorschlagen",
+                heroBadge: "DEZENTRALES HIMMELSNETZWERK • INITIIERT IN JAPAN",
+                heroTitlePrefix: "Den Nachthimmel befreien von",
+                heroTitleHighlight: "Bürokratischen Barcodes",
+                heroSubtitle: `Offizielle Komitees sperren den Kosmos hinter seelenlose Seriennummern wie <code class="font-mono text-sky-300 bg-sky-950/80 px-1.5 py-0.5 rounded text-sm">TYC 4532-1209-1</code>. Wir sind eine unabhängige globale Allianz, die Sternen poetische Namen gibt.`,
+                btnExplore: "Zivilregister erkunden",
+                btnSubmitHero: "Sternennamen einreichen",
+                statLabel1: "Katalogisierte Sterne",
+                statValue2: "OFFEN",
+                statLabel2: "Netzwerkstatus",
+                statLabel3: "In Bürgerhand",
+                statLabel4: "Bürokratie",
+                manifestoTag: "// 01. DAS MANIFEST",
+                manifestoTitle: "Warum wir alphanumerische Seriennummern ablehnen",
+                manifestoP1: `Das menschliche Gehirn ist dafür geschaffen, Mythen und poetische Namen zu bewahren – keine Tabellen-Barcodes. Eine gewaltige Sonne <span class="font-mono text-sky-300">„PSR B1919+21“</span> zu nennen, ist so, als würde man seinen Hund <span class="font-mono text-slate-400">„Canine-0482“</span> taufen.`,
+                manifestoP2: `Noch schlimmer: Man behauptet, eine Nummer diene als „Adresse“, doch man muss trotzdem eine Datenbank abfragen, um zu wissen, ob sie im Osten oder Westen liegt. Währenddessen verkaufen dubiose Seiten wertlose Zertifikate für 50 $.`,
+                manifestoP3: `Die Civilian Astronomy Union (CAU) schließt diese Lücke: ein offenes, demokratisches und kostenloses Register unabhängiger Himmelsbeobachter weltweit.`,
+                registryTag: "// 02. OFFENE DATENBANK",
+                registryTitle: "Ziviles Sternenregister",
+                registrySubtitle: "Bürokratische Katalognummern vereint mit von Menschen gewählten Namen.",
+                searchPlaceholder: "ID, Name oder @User suchen...",
+                filterAll: "Alle Status",
+                filterAdopted: "Angenommen (Offiziell CAU)",
+                filterPolling: "Offen zur Abstimmung",
+                emptyText: "Keine Himmelsobjekte entsprechen deiner Suche im aktuellen Register.",
+                emptyBtn: "+ Sei der Erste, der ihn benennt",
+                badgeAdopted: "● OFFIZIELL CAU",
+                badgePolling: "◐ ABSTIMMUNG LÄUFT",
+                cardCatalogTooltip: "Ehemalige bürokratische ID",
+                cardNamedBy: "Benannt von",
+                cardSubmissionCoords: "Ziviler Vorschlag",
+                charterTag: "// 03. DIE CHARTA",
+                charterTitle: "Drei Goldene Regeln der Namensgebung",
+                charterSubtitle: "Damit unser Register respektiert, poetisch und frei von Chaos bleibt, folgt jeder Eintrag drei einfachen Prinzipien.",
+                rule1Tag: "REGEL 01 // RESPEKT",
+                rule1Title: "Antike Namen ehren",
+                rule1Desc: "Wir überschreiben niemals klassische Namen wie Sirius, Wega oder Beteigeuze. Unsere Mission gilt namenlosen Sternen hinter Katalogcodes.",
+                rule2Tag: "REGEL 02 // WÜRDE",
+                rule2Title: "Poetisch & Bedeutungsvoll",
+                rule2Desc: "Keine Werbung, kein Spam, keine Beleidigungen. Jeder vorgeschlagene Name soll eine Geschichte oder Emotion tragen, die einer Sonne würdig ist.",
+                rule3Tag: "REGEL 03 // DEMOKRATIE",
+                rule3Title: "Konsens durch Abstimmung",
+                rule3Desc: "Werden mehrere Namen für denselben Stern vorgeschlagen, entscheidet die Community per öffentlicher Abstimmung auf X (Twitter).",
+                footerSub: "Unabhängiges Beobachtungsnetzwerk • Initiiert in Japan • Offen für die Welt",
+                footerBtn: "Auf X folgen & abstimmen",
+                modalTag: "// VORSCHLAG EINREICHEN",
+                modalTitle: "Einem namenlosen Stern einen Namen geben",
+                modalSubtitle: "Vorschau im Register ansehen und einen fertigen X-Beitrag generieren.",
+                labelCatalogId: "Offizielle Katalog-ID *",
+                placeholderCatalogId: "z.B. HD 209458",
+                labelCivilianName: "Vorgeschlagener Zivilname *",
+                placeholderCivilianName: "z.B. Solaris Flüstern",
+                labelConstellation: "Sternbild / Region",
+                placeholderConstellation: "z.B. Pegasus",
+                labelHandle: "Dein X-Handle *",
+                placeholderHandle: "@sternengucker",
+                labelStory: "Bedeutung / Entstehungsgeschichte *",
+                placeholderStory: "Warum verdient dieser Stern diesen Namen?",
+                btnGenerate: "Vorschau & X-Post generieren",
+                tweetReadyMsg: "✓ Zur Vorschau hinzugefügt! Kopieren & auf X posten:",
+                btnCopy: "Text kopieren",
+                btnCopied: "Kopiert! ✓",
+                btnOpenX: "X öffnen & posten ↗",
+                tweetTemplate: (catId, civName, story) => `Ich schlage vor, „${catId}“ ➡️ „${civName}“ im Register der Civilian Astronomy Union zu nennen! 🌌✨\n\nGeschichte: ${story}\n\n#CivilianAstronomyUnion #Astronomie #Nachthimmel`
+            },
+            zh: {
+                navManifesto: "联盟宣言",
+                navRegistry: "民间星名录",
+                navCharter: "命名宪章",
+                btnProposeNav: "+ 提名星名",
+                heroBadge: "去中心化星空观测网络 • 发起于日本 • 面向全球",
+                heroTitlePrefix: "将璀璨夜空从",
+                heroTitleHighlight: "官僚主义条形码中解放",
+                heroSubtitle: `官方机构将浩瀚宇宙锁在诸如 <code class="font-mono text-sky-300 bg-sky-950/80 px-1.5 py-0.5 rounded text-sm">TYC 4532-1209-1</code> 这样冰冷的序列号背后。我们是一个独立的全球民间联盟，致力于为星辰赋予人类真正热爱的诗意之名。`,
+                btnExplore: "探索民间星名录",
+                btnSubmitHero: "提交星名提案",
+                statLabel1: "已收录恒星",
+                statValue2: "开放中",
+                statLabel2: "网络状态",
+                statLabel3: "民间共有",
+                statLabel4: "权威垄断",
+                manifestoTag: "// 01. THE MANIFESTO（宣言）",
+                manifestoTitle: "为什么我们拒绝冷冰冰的字母数字编号",
+                manifestoP1: `人类的大脑生来是为了铭记神话、故事与诗意的名字，而不是电子表格里的条形码。把一颗熊熊燃烧的巨大恒星叫做 <span class="font-mono text-sky-300">“PSR B1919+21”</span>，就像给你的爱犬取名为 <span class="font-mono text-slate-400">“犬科-0482”</span> 一样荒谬。`,
+                manifestoP2: `更讽刺的是，官方声称编号作为“地址”很方便，但到头来你还是得查数据库才知道它在东边还是西边。与此同时，商业网站却在以50美元的价格兜售无人承认的虚假命名证书。`,
+                manifestoP3: `民间天文学联合会（CAU）打破了这一壁垒：这是一个由全球独立观星者共同维护、完全免费、开放且民主的星名注册库。`,
+                registryTag: "// 02. OPEN DATABASE（开放数据库）",
+                registryTitle: "民间星名注册库",
+                registrySubtitle: "将官僚化的星表编号与人类赋予的诗意名字一一对照。",
+                searchPlaceholder: "搜索编号、星名或 @用户名...",
+                filterAll: "全部状态",
+                filterAdopted: "正式采纳 (Official CAU)",
+                filterPolling: "X 平台投票中",
+                emptyText: "当前星名录中没有找到匹配的天体。",
+                emptyBtn: "+ 成为第一个为它命名的人",
+                badgeAdopted: "● CAU 正式采纳",
+                badgePolling: "◐ 投票进行中",
+                cardCatalogTooltip: "原官僚星表编号",
+                cardNamedBy: "命名者:",
+                cardSubmissionCoords: "民间新提案",
+                charterTag: "// 03. THE CHARTER（宪章）",
+                charterTitle: "星辰命名的三大黄金法则",
+                charterSubtitle: "为了保持星名录的纯粹、诗意与公信力，每一项收录都遵循以下三条简单原则。",
+                rule1Tag: "法则 01 // 尊重",
+                rule1Title: "敬重古老传统星名",
+                rule1Desc: "我们绝不覆盖天狼星、织女星或参宿四等人类自古传颂的经典星名。我们的使命是解放那些被困在数字编号里的无名之星。",
+                rule2Tag: "法则 02 // 格调",
+                rule2Title: "诗意且富有意义",
+                rule2Desc: "拒绝商业广告、垃圾信息或恶意词汇。每一个提议的名字都应承载着配得上一颗恒星的故事、意象或人类情感。",
+                rule3Tag: "法则 03 // 民主",
+                rule3Title: "公投达成共识",
+                rule3Desc: "当多位观星者为同一颗恒星提名时，社区将通过 X（Twitter）公开投票决定。大众选出的名字将载入永恒史册。",
+                footerSub: "独立天文观测网络 • 发起于日本 • 向全世界开放",
+                footerBtn: "在 X 上关注并参与投票",
+                modalTag: "// SUBMIT PROPOSAL（提交提案）",
+                modalTitle: "为无名之星赋予名字",
+                modalSubtitle: "在本地星名录中预览效果，并一键生成用于 X 平台的投稿推文。",
+                labelCatalogId: "官方星表编号 *",
+                placeholderCatalogId: "例如: HD 209458",
+                labelCivilianName: "提议的民间星名 *",
+                placeholderCivilianName: "例如: Solaris Whisper",
+                labelConstellation: "所属星座 / 天区",
+                placeholderConstellation: "例如: Pegasus（飞马座）",
+                labelHandle: "你的 X 账号 *",
+                placeholderHandle: "@stargazer",
+                labelStory: "命名寓意 / 起源故事 *",
+                placeholderStory: "为什么这颗恒星值得拥有这个名字？",
+                btnGenerate: "添加预览并生成 X 推文",
+                tweetReadyMsg: "✓ 已添加到本地预览！复制并发布到 X：",
+                btnCopy: "复制推文内容",
+                btnCopied: "已复制！ ✓",
+                btnOpenX: "前往 X 发布推文 ↗",
+                tweetTemplate: (catId, civName, story) => `我在民间天文学联合会（CAU）星名录中提议将「${catId}」命名为『${civName}』！🌌✨\n\n故事：${story}\n\n#CivilianAstronomyUnion #Astronomy #NightSky`
+            }
+        };
+
+        let currentLang = 'en';
+        let tweetLangMode = 'local'; // 'local' or 'en'
+        let lastProposalData = null;
+
+        // --- 1. Initial Registry Database (Localized Stories) ---
+        let starRegistry = [
+            {
+                id: "HD 189733",
+                civilianName: "Azure Tempest",
+                constellation: "Vulpecula",
+                coords: "RA 20h 00m 43s | Dec +22° 42′",
+                stories: {
+                    en: "Home to a deep cobalt-blue exoplanet where glass rains sideways in 5,400 mph winds. Deserves a name as fierce as its atmosphere.",
+                    ja: "時速8,700kmの暴風の中でガラスの雨が横殴りに降る、深いコバルトブルーの系外惑星を従える恒星。その激しい大気にふさわしい名を。",
+                    es: "Hogar de un exoplaneta azul cobalto donde llueve vidrio de lado con vientos de 8,700 km/h. Merece un nombre tan feroz como su atmósfera.",
+                    fr: "Abrite une exoplanète bleu cobalt où il pleut du verre à l'horizontale sous des vents à 8 700 km/h. Mérite un nom aussi intense que son atmosphère.",
+                    de: "Heimat eines kobaltblauen Exoplaneten, auf dem bei 8.700 km/h Windgeschwindigkeit Glas seitwärts regnet. Verdient einen ebenso wilden Namen.",
+                    zh: "拥有一颗深钴蓝色系外行星，那里在每小时5400英里的狂风中下着横向的玻璃雨。它配得上一个如其大气般狂野的名字。"
+                },
+                namedBy: "@CAU_Founder",
+                status: "ADOPTED"
+            },
+            {
+                id: "PSR B1919+21",
+                civilianName: "The First Pulse",
+                constellation: "Vulpecula",
+                coords: "RA 19h 21m 44s | Dec +21° 53′",
+                stories: {
+                    en: "The very first pulsar ever discovered in 1967—originally nicknamed 'LGM-1' (Little Green Men). A cosmic lighthouse beating every 1.33 seconds.",
+                    ja: "1967年に人類が初めて発見したパルサー。当初は宇宙人の信号かと『LGM-1』と呼ばれた。1.33秒ごとに鼓動を打つ宇宙の灯台。",
+                    es: "El primer púlsar descubierto en 1967, apodado originalmente 'LGM-1' (Pequeños Hombres Verdes). Un faro cósmico que late cada 1.33 segundos.",
+                    fr: "Le tout premier pulsar découvert en 1967, surnommé à l'origine « LGM-1 » (Petits Hommes Verts). Un phare cosmique battant toutes les 1,33 secondes.",
+                    de: "Der allererste 1967 entdeckte Pulsar – ursprünglich ‚LGM-1‘ (Kleine Grüne Männchen) genannt. Ein kosmischer Leuchtturm mit 1,33-Sekunden-Takt.",
+                    zh: "1967年人类发现的第一颗脉冲星，最初被戏称为“小绿人1号”。一座每1.33秒跳动一次的宇宙灯塔。"
+                },
+                namedBy: "@NightWatch_JP",
+                status: "ADOPTED"
+            },
+            {
+                id: "TYC 4532-1209-1",
+                civilianName: "Vanguard's Beacon",
+                constellation: "Camelopardalis",
+                coords: "RA 05h 12m 19s | Dec +78° 14′",
+                stories: {
+                    en: "Once dismissed as a random barcode in standard catalogs. Reclaimed as a symbol for independent backyard observers everywhere.",
+                    ja: "標準カタログの中でただのランダムなバーコードとして扱われていた星。世界中の独立系観測者たちの先駆けの象徴として解放。",
+                    es: "Antes descartada como un código de barras aleatorio en los catálogos estándar. Reclamada como símbolo de los observadores independientes.",
+                    fr: "Autrefois reléguée au rang de simple code-barres dans les catalogues standards. Réhabilitée comme symbole des observateurs indépendants.",
+                    de: "Einst als zufälliger Barcode in Standardkatalogen abgetan. Zurückerobert als Symbol für unabhängige Himmelsbeobachter weltweit.",
+                    zh: "曾被标准星表当作一串随机的条形码而忽视。如今被重新赋予意义，成为全球独立观星者的先驱灯塔。"
+                },
+                namedBy: "@CAU_Founder",
+                status: "ADOPTED"
+            },
+            {
+                id: "1SWASP J140747",
+                civilianName: "Chronos Crown",
+                constellation: "Centaurus",
+                coords: "RA 14h 07m 47s | Dec -39° 45′",
+                stories: {
+                    en: "Surrounded by a gargantuan ring system 200 times larger than Saturn's. Calling it a string of digits is an insult to cosmic architecture.",
+                    ja: "土星の200倍もの巨大な環（リング）を持つ天体。この壮大な宇宙の建築物を数字の羅列で呼ぶのは冒涜に等しい。",
+                    es: "Rodeada por un sistema de anillos 200 veces más grande que el de Saturno. Llamarla una cadena de dígitos es un insulto a la arquitectura cósmica.",
+                    fr: "Entourée d'un système d'anneaux gigantesque, 200 fois plus vaste que celui de Saturne. L'appeler par des chiffres est une insulte au cosmos.",
+                    de: "Umgeben von einem gigantischen Ringsystem, 200-mal größer als das des Saturn. Sie eine Ziffernfolge zu nennen, beleidigt die kosmische Baukunst.",
+                    zh: "被比土星环大200倍的巨型光环系统所环绕。用一串数字来称呼它，简直是对宇宙建筑艺术的亵渎。"
+                },
+                namedBy: "@DeepSkyNomad",
+                status: "POLLING"
+            },
+            {
+                id: "KIC 8462852",
+                civilianName: "The Enigma Veil",
+                constellation: "Cygnus",
+                coords: "RA 20h 06m 15s | Dec +44° 27′",
+                stories: {
+                    en: "Famous for its mysterious, irregular dimming events that baffled standard models and sparked global civilian curiosity.",
+                    ja: "既存の理論モデルを困惑させ、世界中の民間観測者の好奇心に火をつけた謎めいた不規則な減光現象で知られる恒星。",
+                    es: "Famosa por sus misteriosos eventos de atenuación irregular que desconcertaron a los modelos estándar y despertaron la curiosidad mundial.",
+                    fr: "Célèbre pour ses mystérieuses baisses de luminosité irrégulières qui ont dérouté les modèles standards et éveillé la curiosité mondiale.",
+                    de: "Berühmt für ihre mysteriösen, unregelmäßigen Helligkeitseinbrüche, die Standardmodelle verblüfften und weltweite Neugier weckten.",
+                    zh: "以其神秘而不规则的变暗现象而闻名，曾令传统天体模型困惑不已，点燃了全球民间观星者的好奇心。"
+                },
+                namedBy: "@StarlightHacker",
+                status: "ADOPTED"
+            },
+            {
+                id: "TRAPPIST-1",
+                civilianName: "Seven Sisters of Ember",
+                constellation: "Aquarius",
+                coords: "RA 23h 06m 29s | Dec -05° 02′",
+                stories: {
+                    en: "An ultra-cool red dwarf cradling seven rocky, Earth-sized worlds in tight, resonant harmony.",
+                    ja: "地球サイズの7つの岩石惑星を緊密な共鳴軌道で抱く、静かに燃える赤色矮星。",
+                    es: "Una enana roja ultrafría que acuna siete mundos rocosos del tamaño de la Tierra en una estrecha y resonante armonía.",
+                    fr: "Une naine rouge ultra-froide berçant sept mondes rocheux de la taille de la Terre dans une harmonie résonnante.",
+                    de: "Ein ultrakühler Roter Zwerg, der sieben erdgroße Gesteinswelten in enger, resonanter Harmonie beherbergt.",
+                    zh: "一颗超冷红矮星，在紧密而和谐的共振轨道中孕育着七颗与地球大小相仿的岩石行星。"
+                },
+                namedBy: "@AstroPoet",
+                status: "POLLING"
+            }
+        ];
+
+        // --- 1.5 Language Switching Logic ---
+        function changeLanguage(lang) {
+            if (!translations[lang]) lang = 'en';
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            document.getElementById('languageSelector').value = lang;
+
+            try {
+                localStorage.setItem('cau_preferred_lang', lang);
+            } catch (e) { /* Ignore storage restrictions in sandboxed frames */ }
+
+            const t = translations[lang];
+
+            // Update all elements with data-i18n attribute
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (t[key] !== undefined) {
+                    el.innerHTML = t[key];
+                }
+            });
+
+            // Update Placeholders
+            document.getElementById('searchInput').placeholder = t.searchPlaceholder;
+            document.getElementById('inputCatalogId').placeholder = t.placeholderCatalogId;
+            document.getElementById('inputCivilianName').placeholder = t.placeholderCivilianName;
+            document.getElementById('inputConstellation').placeholder = t.placeholderConstellation;
+            document.getElementById('inputHandle').placeholder = t.placeholderHandle;
+            document.getElementById('inputStory').placeholder = t.placeholderStory;
+
+            // Update Copy Button text
+            document.getElementById('copyBtn').textContent = t.btnCopy;
+
+            // Update Tweet Toggle visibility & text if a proposal exists
+            const toggleWrap = document.getElementById('tweetLangToggleWrap');
+            if (lang === 'en') {
+                toggleWrap.classList.add('hidden');
+            } else {
+                toggleWrap.classList.remove('hidden');
+                document.getElementById('btnTweetLocal').textContent = lang.toUpperCase();
+            }
+            if (lastProposalData) {
+                updateGeneratedTweet();
+            }
+
+            // Re-render star cards in the selected language
+            filterStars();
+        }
+
+        function detectInitialLanguage() {
+            let saved = null;
+            try {
+                saved = localStorage.getItem('cau_preferred_lang');
+            } catch (e) {}
+
+            if (saved && translations[saved]) {
+                return saved;
+            }
+            const browserLang = (navigator.language || navigator.userLanguage || 'en').slice(0, 2).toLowerCase();
+            return translations[browserLang] ? browserLang : 'en';
+        }
+
+        // --- 2. Render Star Cards ---
+        function renderStars(starsToRender) {
+            const grid = document.getElementById('starGrid');
+            const emptyState = document.getElementById('emptyState');
+            const statCounter = document.getElementById('stat-stars');
+            const t = translations[currentLang];
+            
+            statCounter.textContent = String(starRegistry.length).padStart(2, '0');
+            grid.innerHTML = '';
+
+            if (starsToRender.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            starsToRender.forEach(star => {
+                const isAdopted = star.status === 'ADOPTED';
+                const badgeHTML = isAdopted
+                    ? `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">${t.badgeAdopted}</span>`
+                    : `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-500/15 text-amber-300 border border-amber-500/30 animate-pulse">${t.badgePolling}</span>`;
+
+                // Resolve localized story (fallback to custom user story or English)
+                const displayStory = star.customStory
+                    ? star.customStory
+                    : (star.stories[currentLang] || star.stories.en);
+
+                const displayCoords = star.isUserSubmission ? t.cardSubmissionCoords : star.coords;
+
+                const card = document.createElement('div');
+                card.className = 'astro-card rounded-2xl p-6 flex flex-col justify-between';
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between gap-2 mb-3">
+                            <span class="font-mono text-xs text-slate-400 line-through decoration-rose-500/70" title="${escapeHTML(t.cardCatalogTooltip)}">${escapeHTML(star.id)}</span>
+                            ${badgeHTML}
+                        </div>
+                        <h3 class="font-serif text-2xl font-bold text-amber-300 gold-glow mb-1">${escapeHTML(star.civilianName)}</h3>
+                        <div class="font-mono text-[11px] text-sky-400/90 mb-4">
+                            ${escapeHTML(star.constellation)} • ${escapeHTML(displayCoords)}
+                        </div>
+                        <p class="text-slate-300 text-sm leading-relaxed mb-6">
+                            "${escapeHTML(displayStory)}"
+                        </p>
+                    </div>
+                    <div class="pt-4 border-t border-sky-500/15 flex items-center justify-between text-xs font-mono">
+                        <span class="text-slate-400">${escapeHTML(t.cardNamedBy)} <span class="text-sky-300">${escapeHTML(star.namedBy)}</span></span>
+                        <span class="text-slate-500">CAU-REG</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // --- 3. Search & Filter Logic ---
+        function filterStars() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const status = document.getElementById('statusFilter').value;
+
+            const filtered = starRegistry.filter(star => {
+                const matchesStatus = (status === 'ALL') || (star.status === status);
+                const storyText = star.customStory || (star.stories[currentLang] || star.stories.en);
+                const matchesQuery = 
+                    star.id.toLowerCase().includes(query) ||
+                    star.civilianName.toLowerCase().includes(query) ||
+                    star.constellation.toLowerCase().includes(query) ||
+                    star.namedBy.toLowerCase().includes(query) ||
+                    storyText.toLowerCase().includes(query);
+                return matchesStatus && matchesQuery;
+            });
+
+            renderStars(filtered);
+        }
+
+        // --- 4. Modal & Proposal Handling ---
+        function openModal() {
+            document.getElementById('proposalModal').classList.remove('hidden');
+            document.getElementById('proposalModal').classList.add('flex');
+        }
+
+        function closeModal() {
+            document.getElementById('proposalModal').classList.add('hidden');
+            document.getElementById('proposalModal').classList.remove('flex');
+        }
+
+        function handleProposal(e) {
+            e.preventDefault();
+            const catId = document.getElementById('inputCatalogId').value.trim();
+            const civName = document.getElementById('inputCivilianName').value.trim();
+            const constellation = document.getElementById('inputConstellation').value.trim() || "Deep Sky";
+            let handle = document.getElementById('inputHandle').value.trim();
+            if (!handle.startsWith('@')) handle = '@' + handle;
+            const story = document.getElementById('inputStory').value.trim();
+
+            // Add to local registry preview
+            const newEntry = {
+                id: catId,
+                civilianName: civName,
+                constellation: constellation,
+                coords: "Civilian Submission",
+                isUserSubmission: true,
+                customStory: story,
+                namedBy: handle,
+                status: "POLLING"
+            };
+
+            starRegistry.unshift(newEntry);
+            filterStars();
+
+            lastProposalData = { catId, civName, story };
+            tweetLangMode = 'local';
+            updateTweetToggleStyles();
+            updateGeneratedTweet();
+            document.getElementById('tweetResultBox').classList.remove('hidden');
+        }
+
+        function setTweetLanguage(mode) {
+            tweetLangMode = mode;
+            updateTweetToggleStyles();
+            updateGeneratedTweet();
+        }
+
+        function updateTweetToggleStyles() {
+            const btnLocal = document.getElementById('btnTweetLocal');
+            const btnEn = document.getElementById('btnTweetEn');
+            if (tweetLangMode === 'local') {
+                btnLocal.className = "px-2 py-0.5 rounded text-[10px] font-mono bg-sky-500 text-cosmos-950 font-bold transition";
+                btnEn.className = "px-2 py-0.5 rounded text-[10px] font-mono text-slate-300 hover:text-white transition";
+            } else {
+                btnEn.className = "px-2 py-0.5 rounded text-[10px] font-mono bg-sky-500 text-cosmos-950 font-bold transition";
+                btnLocal.className = "px-2 py-0.5 rounded text-[10px] font-mono text-slate-300 hover:text-white transition";
+            }
+        }
+
+        function updateGeneratedTweet() {
+            if (!lastProposalData) return;
+            const targetLang = (tweetLangMode === 'en') ? 'en' : currentLang;
+            const templateFn = translations[targetLang].tweetTemplate;
+            const tweetText = templateFn(lastProposalData.catId, lastProposalData.civName, lastProposalData.story);
+
+            document.getElementById('generatedTweet').value = tweetText;
+            document.getElementById('directTweetLink').href = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+        }
+
+        function copyTweetText() {
+            const textarea = document.getElementById('generatedTweet');
+            textarea.select();
+            document.execCommand('copy');
+            const btn = document.getElementById('copyBtn');
+            const t = translations[currentLang];
+            btn.textContent = t.btnCopied;
+            setTimeout(() => { btn.textContent = t.btnCopy; }, 2000);
+        }
+
+        // Security helper to prevent XSS
+        function escapeHTML(str) {
+            return String(str).replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[tag]));
+        }
+
+        // --- 5. Subtle Animated Starfield Background ---
+        function initStarfield() {
+            const canvas = document.getElementById('starfield');
+            const ctx = canvas.getContext('2d');
+            let width, height, stars = [];
+
+            function resize() {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+                stars = Array.from({ length: Math.floor((width * height) / 9000) }, () => ({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    radius: Math.random() * 1.3 + 0.2,
+                    alpha: Math.random(),
+                    speed: Math.random() * 0.015 + 0.003
+                }));
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, width, height);
+                stars.forEach(s => {
+                    s.alpha += s.speed;
+                    if (s.alpha > 1 || s.alpha < 0.1) s.speed = -s.speed;
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(226, 232, 240, ${s.alpha * 0.75})`;
+                    ctx.fill();
+                });
+                requestAnimationFrame(draw);
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+            draw();
+        }
+
+        // Initialize on window load
+        window.onload = function() {
+            initStarfield();
+            const initialLang = detectInitialLanguage();
+            changeLanguage(initialLang);
+        };
+    </script>
+</body>
+</html>
