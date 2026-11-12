@@ -79,7 +79,6 @@
             </div>
             
             <div class="flex items-center space-x-4">
-                <!-- ユーザーネーム表示・変更ボタン -->
                 <button onclick="openNameModal()" class="hidden sm:flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-cosmos-900 border border-cyan-500/30 text-xs font-mono text-cyan-300">
                     <span>👤</span>
                     <span id="currentUserNameDisplay">ゲスト</span>
@@ -126,13 +125,13 @@
         <div class="text-center max-w-3xl mx-auto mb-12">
             <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-4">
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑（画像対応版）</span>
+                <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑（開発者マーク対応）</span>
             </div>
             <h1 id="hero-title" class="font-serif text-4xl sm:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-r from-white via-slate-200 to-cyan-200 bg-clip-text text-transparent">
                 宇宙の天体に、お気に入りの名前を残しよう
             </h1>
             <p id="hero-desc" class="text-slate-300 text-base sm:text-lg leading-relaxed">
-                写真付きで天体を登録可能！デバイスに保存され消えません。みんなで盛り上がろう。
+                開発者・運営の名前の横には専用の公式マークがつきます！デバイスに保存され消えません。
             </p>
         </div>
 
@@ -186,7 +185,7 @@
         </div>
     </main>
 
-    <!-- 👤 最初に設定するユーザーネーム入力モーダル -->
+    <!-- 👤 ユーザーネーム入力モーダル -->
     <div id="nameModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md hidden">
         <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-cyan-500/40 shadow-2xl text-center relative">
             <div class="text-4xl mb-3">👤</div>
@@ -231,7 +230,6 @@
                     <label class="block text-xs font-mono text-cyan-400 uppercase mb-1" id="label-starname">天体名称</label>
                     <input type="text" id="inputName" required placeholder="例: ノヴァ・プライム" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
                 </div>
-                <!-- 📸 画像URL貼り付けフィールド -->
                 <div>
                     <label class="block text-xs font-mono text-cyan-400 uppercase mb-1" id="label-imgurl">写真・画像URL（任意）</label>
                     <input type="url" id="inputImgUrl" placeholder="https://example.com/image.jpg" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
@@ -261,7 +259,7 @@
         </div>
     </div>
 
-    <!-- 💌 製作者への改善メッセージ（フィードバック）モーダル -->
+    <!-- 💌 製作者への改善メッセージモーダル -->
     <div id="feedbackModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
         <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-cyan-500/40 shadow-2xl relative">
             <div class="flex items-center justify-between mb-4">
@@ -326,7 +324,6 @@
 
     <!-- JavaScript Application Logic -->
     <script>
-        // NGワードリスト（不適切な名前を弾くためのガード）
         const NG_WORDS = ["あほ", "バカ", "ばか", "死ね", "しね", "殺す", "ころす", "unko", "manko", "kintama", "idiot", "stupid", "fuck", "shit", "bitch"];
 
         function containsNGWord(text) {
@@ -334,24 +331,31 @@
             return NG_WORDS.some(word => lower.includes(word));
         }
 
+        // 🛡️ 開発者・運営の名前（ここに自分の名前を設定すると、自動で公式バッジがつくよ！）
+        const DEVELOPER_NAMES = ["C.A.U. Official", "ooyosinobori", "CAU Admin"];
+
+        function isDeveloper(name) {
+            return DEVELOPER_NAMES.includes(name);
+        }
+
         const defaultStars = [
-            { id: "CAU-001", name: "Aethelgard", type: "star", imgUrl: "", ra: "03h 47m", dec: "+24° 15′", owner: "Orion Vanguard", date: "2026-01-15", notes: "穏やかな光を放つお気に入りのオレンジ色の星。", claps: 12, comments: ["綺麗ですね！"] },
+            { id: "CAU-001", name: "Aethelgard", type: "star", imgUrl: "", ra: "03h 47m", dec: "+24° 15′", owner: "C.A.U. Official", date: "2026-01-15", notes: "連合本部が管理する公式認定のオレンジ色の恒星。", claps: 42, comments: ["⚡ 公式データです"] },
             { id: "CAU-002", name: "Vesper-9", type: "planet", imgUrl: "", ra: "18h 36m", dec: "-13° 49′", owner: "Lyra Collective", date: "2026-02-02", notes: "青く輝く美しいガス惑星。", claps: 25, comments: ["リングが綺麗そう！"] },
             { id: "CAU-003", name: "Kaelum Prime", type: "star", imgUrl: "", ra: "22h 11m", dec: "+45° 12′", owner: "Astra Guild", date: "2026-02-18", notes: "冬の夜空でひときわ輝いていた美しい星。", claps: 19, comments: [] },
             { id: "CAU-004", name: "Solaria Minor", type: "nebula", imgUrl: "", ra: "06h 45m", dec: "-16° 42′", owner: "Sirius Independent", date: "2026-03-10", notes: "色鮮やかなガスが広がる美しい星雲。", claps: 30, comments: ["写真映えしそう！"] },
             { id: "CAU-005", name: "Zephyria", type: "star", imgUrl: "", ra: "12h 21m", dec: "+57° 01′", owner: "Borealis Group", date: "2026-04-05", notes: "静かな夜の観測中に偶然見つけたお気に入り。", claps: 14, comments: [] },
-            { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", owner: "Core Vanguard", date: "2026-05-20", notes: "周囲の光を飲み込む巨大なブラックホール。", claps: 45, comments: ["重力がすごそう…！"] }
+            { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", owner: "C.A.U. Official", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
         ];
 
-        let stars = JSON.parse(localStorage.getItem('cau_stars_v4')) || defaultStars;
-        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v4')) || [];
-        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v4')) || [];
+        let stars = JSON.parse(localStorage.getItem('cau_stars_v6')) || defaultStars;
+        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v6')) || [];
+        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v6')) || [];
         let currentUserName = localStorage.getItem('cau_username') || '';
 
         function saveStars() {
-            localStorage.setItem('cau_stars_v4', JSON.stringify(stars));
-            localStorage.setItem('cau_user_claps_v4', JSON.stringify(userClaps));
-            localStorage.setItem('cau_feedbacks_v4', JSON.stringify(feedbacks));
+            localStorage.setItem('cau_stars_v6', JSON.stringify(stars));
+            localStorage.setItem('cau_user_claps_v6', JSON.stringify(userClaps));
+            localStorage.setItem('cau_feedbacks_v6', JSON.stringify(feedbacks));
             localStorage.setItem('cau_username', currentUserName);
         }
 
@@ -362,7 +366,7 @@
             ja: {
                 status: "みんなで作るオープンな宇宙・星空図鑑",
                 title: "宇宙の天体に、お気に入りの名前を残しよう",
-                desc: "写真付きで天体を登録可能！デバイスに保存され消えません。みんなで盛り上がろう。",
+                desc: "開発者・運営の名前の横には専用の公式マークがつきます！デバイスに保存され消えません。",
                 searchKeyword: "天体名やキーワードで検索...",
                 registerBtn: "天体を登録する",
                 gachaBtn: "今日の宇宙ガチャ",
@@ -398,7 +402,7 @@
             en: {
                 status: "Community-driven Space Registry",
                 title: "Claim Your Place Among the Cosmos",
-                desc: "Register celestial objects with photos! Saved on your device.",
+                desc: "Developer & admin names feature official badges!",
                 searchKeyword: "Search celestial objects...",
                 registerBtn: "Register Object",
                 gachaBtn: "Space Gacha",
@@ -434,7 +438,7 @@
             zh: {
                 status: "社区驱动的太空星空图鉴",
                 title: "在宇宙天体中留下你喜爱的名字",
-                desc: "可附带图片注册天体！数据将保存在您的设备上。",
+                desc: "开发者和管理员名称带有专属官方认证标志！",
                 searchKeyword: "搜索天体名称...",
                 registerBtn: "注册天体",
                 gachaBtn: "宇宙抽奖",
@@ -470,7 +474,7 @@
             es: {
                 status: "Registro Espacial Comunitario",
                 title: "Deja tu nombre favorito en el cosmos",
-                desc: "¡Registra objetos con fotos! Guardado en tu dispositivo.",
+                desc: "¡Los nombres de desarrolladores tienen insignias oficiales!",
                 searchKeyword: "Buscar objetos celestes...",
                 registerBtn: "Registrar Objeto",
                 gachaBtn: "Gacha Espacial",
@@ -506,7 +510,7 @@
             fr: {
                 status: "Registre Spatial Communautaire",
                 title: "Laissez votre empreinte dans le cosmos",
-                desc: "Enregistrez des objets avec des photos ! Sauvegardé sur votre appareil.",
+                desc: "Les noms des développeurs affichent des badges officiels !",
                 searchKeyword: "Rechercher des objets...",
                 registerBtn: "Enregistrer",
                 gachaBtn: "Gacha Spatial",
@@ -542,7 +546,7 @@
             de: {
                 status: "Gemeinschaftliches Sternenregister",
                 title: "Hinterlasse deinen Namen im Kosmos",
-                desc: "Registriere Himmelskörper mit Fotos! Auf deinem Gerät gespeichert.",
+                desc: "Namen von Entwicklern tragen offizielle Abzeichen!",
                 searchKeyword: "Himmelskörper suchen...",
                 registerBtn: "Objekt registrieren",
                 gachaBtn: "Weltraum-Gacha",
@@ -624,12 +628,20 @@
             filterStars();
         }
 
-        // 👤 ユーザーネーム管理
         function checkUsername() {
             if (!currentUserName) {
                 document.getElementById('nameModal').classList.remove('hidden');
             } else {
-                document.getElementById('currentUserNameDisplay').innerText = currentUserName;
+                updateUserDisplay();
+            }
+        }
+
+        function updateUserDisplay() {
+            const displayEl = document.getElementById('currentUserNameDisplay');
+            if (isDeveloper(currentUserName)) {
+                displayEl.innerHTML = `${currentUserName} <span class="text-amber-400 ml-1">⚡ OFFICIAL</span>`;
+            } else {
+                displayEl.innerText = currentUserName;
             }
         }
 
@@ -652,11 +664,10 @@
             errorMsg.classList.add('hidden');
             currentUserName = nameInput;
             saveStars();
-            document.getElementById('currentUserNameDisplay').innerText = currentUserName;
+            updateUserDisplay();
             document.getElementById('nameModal').classList.add('hidden');
         }
 
-        // いいね機能
         function addClap(id) {
             if (userClaps.includes(id)) {
                 alert(currentLang === 'ja' ? "すでに「観測したよ」を送っています！" : "Already clapped!");
@@ -671,7 +682,6 @@
             }
         }
 
-        // コメント追加（ここでもNGワードチェック付き！）
         function addComment(event, id) {
             event.preventDefault();
             const input = document.getElementById(`comment-input-${id}`);
@@ -686,7 +696,9 @@
                 const target = stars.find(s => s.id === id);
                 if (target) {
                     if (!target.comments) target.comments = [];
-                    target.comments.push(`${currentUserName}: ${commentText}`);
+                    // コメント主が開発者の場合はマークをつける
+                    const commenterDisplay = isDeveloper(currentUserName) ? `${currentUserName} ⚡` : currentUserName;
+                    target.comments.push(`${commenterDisplay}: ${commentText}`);
                     saveStars();
                     input.value = '';
                     filterStars();
@@ -694,7 +706,6 @@
             }
         }
 
-        // 削除機能
         function deleteStar(id) {
             if (confirm(currentLang === 'ja' ? "この天体を削除しますか？" : "Delete this object?")) {
                 stars = stars.filter(s => s.id !== id);
@@ -747,7 +758,12 @@
                 if (star.type === 'nebula') typeBadge = "🌌 星雲";
                 if (star.type === 'blackhole') typeBadge = "🕳️ ブラックホール";
 
-                // 📸 画像がある場合のHTML
+                // ⚡ オーナー（投稿者）が開発者の場合に名前の横に公式マークを表示
+                const ownerIsDev = isDeveloper(star.owner);
+                const ownerDisplay = ownerIsDev 
+                    ? `<span class="text-amber-400 font-bold flex items-center space-x-1"><span>${star.owner}</span><span class="bg-amber-500/20 border border-amber-400/50 text-amber-300 px-1.5 py-0.2 rounded text-[9px]">⚡ OFFICIAL</span></span>` 
+                    : `<span class="text-cyan-400">${star.owner}</span>`;
+
                 const imgHtml = star.imgUrl ? `<div class="mb-4 h-40 overflow-hidden rounded-xl border border-cyan-500/20"><img src="${star.imgUrl}" alt="${star.name}" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-300" onerror="this.parentElement.style.display='none'"></div>` : '';
 
                 return `
@@ -771,9 +787,9 @@
                                 <span>RA/DEC:</span>
                                 <span class="text-slate-200">${star.ra} | ${star.dec}</span>
                             </div>
-                            <div class="flex justify-between text-slate-400">
+                            <div class="flex justify-between items-center text-slate-400">
                                 <span>Owner:</span>
-                                <span class="text-cyan-400 truncate max-w-[140px]" title="${star.owner}">${star.owner}</span>
+                                <span class="truncate max-w-[160px]" title="${star.owner}">${ownerDisplay}</span>
                             </div>
                         </div>
 
@@ -899,6 +915,8 @@
             height = canvas.height = window.innerHeight;
         }
 
+        const devNames = DEVELOPER_NAMES; // スクリプト内で参照用
+
         function initStarfield() {
             resize();
             starsArr = Array.from({ length: 150 }, () => ({
@@ -928,7 +946,7 @@
         window.onload = function() {
             initStarfield();
             changeLanguage('ja');
-            checkUsername(); // 最初にユーザーネームをチェック！
+            checkUsername();
             const searchInput = document.getElementById('searchInput');
             if (searchInput) searchInput.value = '';
             filterStars();
