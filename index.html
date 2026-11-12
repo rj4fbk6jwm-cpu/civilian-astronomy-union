@@ -79,7 +79,12 @@
             </div>
             
             <div class="flex items-center space-x-4">
-                <!-- 6か国語切り替えセレクト -->
+                <!-- ユーザーネーム表示・変更ボタン -->
+                <button onclick="openNameModal()" class="hidden sm:flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-cosmos-900 border border-cyan-500/30 text-xs font-mono text-cyan-300">
+                    <span>👤</span>
+                    <span id="currentUserNameDisplay">ゲスト</span>
+                </button>
+
                 <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-cosmos-900/90 text-cyan-300 border border-cyan-500/30 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none">
                     <option value="ja">日本語</option>
                     <option value="en">English</option>
@@ -88,7 +93,6 @@
                     <option value="fr">Français</option>
                     <option value="de">Deutsch</option>
                 </select>
-                <!-- 作者へメッセージ送信ボタン -->
                 <button onclick="openFeedbackModal()" class="hidden sm:flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 text-xs font-mono transition-all">
                     <span>💌</span>
                     <span id="nav-feedback-btn">製作者へ連絡</span>
@@ -122,13 +126,13 @@
         <div class="text-center max-w-3xl mx-auto mb-12">
             <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-4">
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑</span>
+                <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑（画像対応版）</span>
             </div>
             <h1 id="hero-title" class="font-serif text-4xl sm:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-r from-white via-slate-200 to-cyan-200 bg-clip-text text-transparent">
                 宇宙の天体に、お気に入りの名前を残しよう
             </h1>
             <p id="hero-desc" class="text-slate-300 text-base sm:text-lg leading-relaxed">
-                星だけでなく、惑星やブラックホールなども登録可能！デバイスに保存され消えません。いいねやコメントで盛り上がろう。
+                写真付きで天体を登録可能！デバイスに保存され消えません。みんなで盛り上がろう。
             </p>
         </div>
 
@@ -182,9 +186,27 @@
         </div>
     </main>
 
+    <!-- 👤 最初に設定するユーザーネーム入力モーダル -->
+    <div id="nameModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md hidden">
+        <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-cyan-500/40 shadow-2xl text-center relative">
+            <div class="text-4xl mb-3">👤</div>
+            <h3 class="font-serif text-2xl font-bold text-white mb-2" id="name-modal-title">あなたの名前（ニックネーム）を教えてね</h3>
+            <p class="text-xs text-slate-300 mb-4" id="name-modal-desc">図鑑で天体を登録したりコメントするときに使われます。</p>
+            <form onsubmit="handleNameSubmit(event)" class="space-y-4">
+                <div>
+                    <input type="text" id="inputUsername" required placeholder="例: アストロ君" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none text-center">
+                    <p id="nameErrorMsg" class="text-xs text-red-400 mt-2 hidden">⚠️ 不適切な言葉が含まれているため、その名前は使用できません。</p>
+                </div>
+                <button type="submit" id="name-submit-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-cosmos-950 font-bold text-sm shadow-lg transition-all">
+                    決定する
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- Registration Modal -->
     <div id="registerModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
-        <div class="glass-panel rounded-3xl max-w-lg w-full p-6 sm:p-8 border border-cyan-500/30 shadow-2xl relative">
+        <div class="glass-panel rounded-3xl max-w-lg w-full p-6 sm:p-8 border border-cyan-500/30 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between mb-6">
                 <h3 class="font-serif text-2xl font-bold text-white flex items-center space-x-2">
                     <span>✨</span>
@@ -209,6 +231,11 @@
                     <label class="block text-xs font-mono text-cyan-400 uppercase mb-1" id="label-starname">天体名称</label>
                     <input type="text" id="inputName" required placeholder="例: ノヴァ・プライム" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
                 </div>
+                <!-- 📸 画像URL貼り付けフィールド -->
+                <div>
+                    <label class="block text-xs font-mono text-cyan-400 uppercase mb-1" id="label-imgurl">写真・画像URL（任意）</label>
+                    <input type="url" id="inputImgUrl" placeholder="https://example.com/image.jpg" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
+                </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-mono text-cyan-400 uppercase mb-1" id="label-ra">位置 (赤経 RA)</label>
@@ -221,7 +248,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-mono text-cyan-400 uppercase mb-1" id="label-owner">登録者のお名前</label>
-                    <input type="text" id="inputOwner" required placeholder="あなたの名前" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
+                    <input type="text" id="inputOwner" readonly class="w-full px-4 py-3 rounded-xl glass-input text-sm text-cyan-300 focus:outline-none bg-cosmos-900/60 cursor-not-allowed">
                 </div>
                 <div>
                     <label class="block text-xs font-mono text-cyan-400 uppercase mb-1" id="label-notes">ひとことメモ・思い出</label>
@@ -248,9 +275,6 @@
             </div>
             <p id="feedback-desc" class="text-xs text-slate-300 mb-4">サイトの感想、改善してほしい点、新しい機能のアイデアなどを自由に送ってください！</p>
             <form onsubmit="handleFeedbackSubmit(event)" class="space-y-4">
-                <div>
-                    <input type="text" id="feedbackName" required placeholder="お名前（またはペンネーム）" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
-                </div>
                 <div>
                     <textarea id="feedbackMessage" rows="4" required placeholder="メッセージ内容..." class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none resize-none"></textarea>
                 </div>
@@ -302,34 +326,43 @@
 
     <!-- JavaScript Application Logic -->
     <script>
+        // NGワードリスト（不適切な名前を弾くためのガード）
+        const NG_WORDS = ["あほ", "バカ", "ばか", "死ね", "しね", "殺す", "ころす", "unko", "manko", "kintama", "idiot", "stupid", "fuck", "shit", "bitch"];
+
+        function containsNGWord(text) {
+            const lower = text.toLowerCase();
+            return NG_WORDS.some(word => lower.includes(word));
+        }
+
         const defaultStars = [
-            { id: "CAU-001", name: "Aethelgard", type: "star", ra: "03h 47m", dec: "+24° 15′", owner: "Orion Vanguard", date: "2026-01-15", notes: "穏やかな光を放つお気に入りのオレンジ色の星。", claps: 12, comments: ["綺麗ですね！"] },
-            { id: "CAU-002", name: "Vesper-9", type: "planet", ra: "18h 36m", dec: "-13° 49′", owner: "Lyra Collective", date: "2026-02-02", notes: "青く輝く美しいガス惑星。", claps: 25, comments: ["リングが綺麗そう！"] },
-            { id: "CAU-003", name: "Kaelum Prime", type: "star", ra: "22h 11m", dec: "+45° 12′", owner: "Astra Guild", date: "2026-02-18", notes: "冬の夜空でひときわ輝いていた美しい星。", claps: 19, comments: [] },
-            { id: "CAU-004", name: "Solaria Minor", type: "nebula", ra: "06h 45m", dec: "-16° 42′", owner: "Sirius Independent", date: "2026-03-10", notes: "色鮮やかなガスが広がる美しい星雲。", claps: 30, comments: ["写真映えしそう！"] },
-            { id: "CAU-005", name: "Zephyria", type: "star", ra: "12h 21m", dec: "+57° 01′", owner: "Borealis Group", date: "2026-04-05", notes: "静かな夜の観測中に偶然見つけたお気に入り。", claps: 14, comments: [] },
-            { id: "CAU-006", name: "Gargantua-X", type: "blackhole", ra: "17h 45m", dec: "-29° 00′", owner: "Core Vanguard", date: "2026-05-20", notes: "周囲の光を飲み込む巨大なブラックホール。", claps: 45, comments: ["重力がすごそう…！"] }
+            { id: "CAU-001", name: "Aethelgard", type: "star", imgUrl: "", ra: "03h 47m", dec: "+24° 15′", owner: "Orion Vanguard", date: "2026-01-15", notes: "穏やかな光を放つお気に入りのオレンジ色の星。", claps: 12, comments: ["綺麗ですね！"] },
+            { id: "CAU-002", name: "Vesper-9", type: "planet", imgUrl: "", ra: "18h 36m", dec: "-13° 49′", owner: "Lyra Collective", date: "2026-02-02", notes: "青く輝く美しいガス惑星。", claps: 25, comments: ["リングが綺麗そう！"] },
+            { id: "CAU-003", name: "Kaelum Prime", type: "star", imgUrl: "", ra: "22h 11m", dec: "+45° 12′", owner: "Astra Guild", date: "2026-02-18", notes: "冬の夜空でひときわ輝いていた美しい星。", claps: 19, comments: [] },
+            { id: "CAU-004", name: "Solaria Minor", type: "nebula", imgUrl: "", ra: "06h 45m", dec: "-16° 42′", owner: "Sirius Independent", date: "2026-03-10", notes: "色鮮やかなガスが広がる美しい星雲。", claps: 30, comments: ["写真映えしそう！"] },
+            { id: "CAU-005", name: "Zephyria", type: "star", imgUrl: "", ra: "12h 21m", dec: "+57° 01′", owner: "Borealis Group", date: "2026-04-05", notes: "静かな夜の観測中に偶然見つけたお気に入り。", claps: 14, comments: [] },
+            { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", owner: "Core Vanguard", date: "2026-05-20", notes: "周囲の光を飲み込む巨大なブラックホール。", claps: 45, comments: ["重力がすごそう…！"] }
         ];
 
-        let stars = JSON.parse(localStorage.getItem('cau_stars_v3')) || defaultStars;
-        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v3')) || [];
-        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks')) || [];
+        let stars = JSON.parse(localStorage.getItem('cau_stars_v4')) || defaultStars;
+        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v4')) || [];
+        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v4')) || [];
+        let currentUserName = localStorage.getItem('cau_username') || '';
 
         function saveStars() {
-            localStorage.setItem('cau_stars_v3', JSON.stringify(stars));
-            localStorage.setItem('cau_user_claps_v3', JSON.stringify(userClaps));
-            localStorage.setItem('cau_feedbacks', JSON.stringify(feedbacks));
+            localStorage.setItem('cau_stars_v4', JSON.stringify(stars));
+            localStorage.setItem('cau_user_claps_v4', JSON.stringify(userClaps));
+            localStorage.setItem('cau_feedbacks_v4', JSON.stringify(feedbacks));
+            localStorage.setItem('cau_username', currentUserName);
         }
 
         let currentLang = 'ja';
         let currentType = 'all';
 
-        // 6か国語の翻訳辞書
         const i18n = {
             ja: {
                 status: "みんなで作るオープンな宇宙・星空図鑑",
                 title: "宇宙の天体に、お気に入りの名前を残しよう",
-                desc: "星だけでなく、惑星やブラックホールなども登録可能！デバイスに保存され消えません。いいねやコメントで盛り上がろう。",
+                desc: "写真付きで天体を登録可能！デバイスに保存され消えません。みんなで盛り上がろう。",
                 searchKeyword: "天体名やキーワードで検索...",
                 registerBtn: "天体を登録する",
                 gachaBtn: "今日の宇宙ガチャ",
@@ -345,6 +378,7 @@
                 modalTitle: "新しい天体を登録する",
                 labelType: "天体の種類",
                 labelName: "天体名称",
+                labelImgUrl: "写真・画像URL（任意）",
                 labelRA: "位置 (赤経 RA)",
                 labelDec: "位置 (赤緯 DEC)",
                 labelOwner: "登録者のお名前",
@@ -364,7 +398,7 @@
             en: {
                 status: "Community-driven Space Registry",
                 title: "Claim Your Place Among the Cosmos",
-                desc: "Register stars, planets, and black holes! Saved on your device.",
+                desc: "Register celestial objects with photos! Saved on your device.",
                 searchKeyword: "Search celestial objects...",
                 registerBtn: "Register Object",
                 gachaBtn: "Space Gacha",
@@ -380,15 +414,16 @@
                 modalTitle: "Register a New Object",
                 labelType: "Object Type",
                 labelName: "Object Name",
+                labelImgUrl: "Photo/Image URL (Optional)",
                 labelRA: "Right Ascension (RA)",
                 labelDec: "Declination (DEC)",
-                labelOwner: "Registrant / Owner",
-                labelNotes: "Personal Notes / Memories",
+                labelOwner: "Registrant",
+                labelNotes: "Personal Notes",
                 submitReg: "Submit to Registry",
                 feedbackBtnNav: "Contact Creator",
                 feedbackLinkFooter: "Send Feedback to Creator",
                 feedbackModalTitle: "Send Message to Creator",
-                feedbackDesc: "Tell us your thoughts, feedback, or ideas!",
+                feedbackDesc: "Tell us your thoughts or ideas!",
                 feedbackSubmit: "Send Message",
                 successTitle: "Registered!",
                 successDesc: "Your object has been added to the cosmos!",
@@ -399,7 +434,7 @@
             zh: {
                 status: "社区驱动的太空星空图鉴",
                 title: "在宇宙天体中留下你喜爱的名字",
-                desc: "不仅是星星，还可以注册行星和黑洞！数据将保存在您的设备上。",
+                desc: "可附带图片注册天体！数据将保存在您的设备上。",
                 searchKeyword: "搜索天体名称...",
                 registerBtn: "注册天体",
                 gachaBtn: "宇宙抽奖",
@@ -415,15 +450,16 @@
                 modalTitle: "注册新天体",
                 labelType: "天体类型",
                 labelName: "天体名称",
+                labelImgUrl: "图片链接 (可选)",
                 labelRA: "赤经 (RA)",
                 labelDec: "赤纬 (DEC)",
-                labelOwner: "注册人 / 所有者",
-                labelNotes: "个人备忘录 / 回忆",
+                labelOwner: "注册人",
+                labelNotes: "个人备忘录",
                 submitReg: "提交到图鉴",
                 feedbackBtnNav: "联系作者",
                 feedbackLinkFooter: "向作者发送改进建议",
                 feedbackModalTitle: "给作者发送消息",
-                feedbackDesc: "请告诉我们您的想法、建议或新功能构想！",
+                feedbackDesc: "请告诉我们您的想法或建议！",
                 feedbackSubmit: "发送消息",
                 successTitle: "注册成功！",
                 successDesc: "新天体已成功刻入宇宙图鉴！",
@@ -434,7 +470,7 @@
             es: {
                 status: "Registro Espacial Comunitario",
                 title: "Deja tu nombre favorito en el cosmos",
-                desc: "¡Registra estrellas, planetas y agujeros negros! Guardado en tu dispositivo.",
+                desc: "¡Registra objetos con fotos! Guardado en tu dispositivo.",
                 searchKeyword: "Buscar objetos celestes...",
                 registerBtn: "Registrar Objeto",
                 gachaBtn: "Gacha Espacial",
@@ -450,6 +486,7 @@
                 modalTitle: "Registrar Nuevo Objeto",
                 labelType: "Tipo de Objeto",
                 labelName: "Nombre",
+                labelImgUrl: "URL de Imagen (Opcional)",
                 labelRA: "Ascensión Recta (RA)",
                 labelDec: "Declinación (DEC)",
                 labelOwner: "Propietario",
@@ -458,7 +495,7 @@
                 feedbackBtnNav: "Contactar",
                 feedbackLinkFooter: "Enviar comentarios al creador",
                 feedbackModalTitle: "Enviar mensaje al creador",
-                feedbackDesc: "¡Envía tus comentarios, ideas o sugerencias!",
+                feedbackDesc: "¡Envía tus comentarios o ideas!",
                 feedbackSubmit: "Enviar Mensaje",
                 successTitle: "¡Registrado!",
                 successDesc: "¡Tu objeto ha sido añadido al cosmos!",
@@ -469,7 +506,7 @@
             fr: {
                 status: "Registre Spatial Communautaire",
                 title: "Laissez votre empreinte dans le cosmos",
-                desc: "Enregistrez étoiles, planètes et trous noirs ! Sauvegardé sur votre appareil.",
+                desc: "Enregistrez des objets avec des photos ! Sauvegardé sur votre appareil.",
                 searchKeyword: "Rechercher des objets...",
                 registerBtn: "Enregistrer",
                 gachaBtn: "Gacha Spatial",
@@ -485,6 +522,7 @@
                 modalTitle: "Nouvel Objet Céleste",
                 labelType: "Type d'objet",
                 labelName: "Nom",
+                labelImgUrl: "URL de l'image (Optionnel)",
                 labelRA: "Ascension Droite (RA)",
                 labelDec: "Déclinaison (DEC)",
                 labelOwner: "Propriétaire",
@@ -493,7 +531,7 @@
                 feedbackBtnNav: "Contacter",
                 feedbackLinkFooter: "Envoyer un message au créateur",
                 feedbackModalTitle: "Envoyer un message au créateur",
-                feedbackDesc: "Partagez vos impressions ou vos idées d'amélioration !",
+                feedbackDesc: "Partagez vos impressions ou vos idées !",
                 feedbackSubmit: "Envoyer",
                 successTitle: "Enregistré !",
                 successDesc: "Votre objet a été gravé dans le cosmos !",
@@ -504,7 +542,7 @@
             de: {
                 status: "Gemeinschaftliches Sternenregister",
                 title: "Hinterlasse deinen Namen im Kosmos",
-                desc: "Registriere Sterne, Planeten und Schwarze Löcher! Auf deinem Gerät gespeichert.",
+                desc: "Registriere Himmelskörper mit Fotos! Auf deinem Gerät gespeichert.",
                 searchKeyword: "Himmelskörper suchen...",
                 registerBtn: "Objekt registrieren",
                 gachaBtn: "Weltraum-Gacha",
@@ -520,6 +558,7 @@
                 modalTitle: "Neues Objekt registrieren",
                 labelType: "Objekttyp",
                 labelName: "Name",
+                labelImgUrl: "Bild-URL (Optional)",
                 labelRA: "Rektaszension (RA)",
                 labelDec: "Deklination (DEC)",
                 labelOwner: "Eigentümer",
@@ -528,7 +567,7 @@
                 feedbackBtnNav: "Kontakt",
                 feedbackLinkFooter: "Feedback an den Ersteller senden",
                 feedbackModalTitle: "Nachricht an den Ersteller",
-                feedbackDesc: "Teile uns deine Gedanken, Ideen oder Verbesserungsvorschläge mit!",
+                feedbackDesc: "Teile uns deine Gedanken oder Ideen mit!",
                 feedbackSubmit: "Nachricht senden",
                 successTitle: "Registriert!",
                 successDesc: "Dein Objekt wurde dem Kosmos hinzugefügt!",
@@ -565,6 +604,7 @@
             document.getElementById('opt-nebula').innerText = t.typeNebula;
             document.getElementById('opt-bh').innerText = t.typeBH;
             document.getElementById('label-starname').innerText = t.labelName;
+            document.getElementById('label-imgurl').innerText = t.labelImgUrl;
             document.getElementById('label-ra').innerText = t.labelRA;
             document.getElementById('label-dec').innerText = t.labelDec;
             document.getElementById('label-owner').innerText = t.labelOwner;
@@ -584,6 +624,38 @@
             filterStars();
         }
 
+        // 👤 ユーザーネーム管理
+        function checkUsername() {
+            if (!currentUserName) {
+                document.getElementById('nameModal').classList.remove('hidden');
+            } else {
+                document.getElementById('currentUserNameDisplay').innerText = currentUserName;
+            }
+        }
+
+        function openNameModal() {
+            document.getElementById('inputUsername').value = currentUserName;
+            document.getElementById('nameErrorMsg').classList.add('hidden');
+            document.getElementById('nameModal').classList.remove('hidden');
+        }
+
+        function handleNameSubmit(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('inputUsername').value.trim();
+            const errorMsg = document.getElementById('nameErrorMsg');
+
+            if (containsNGWord(nameInput)) {
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+
+            errorMsg.classList.add('hidden');
+            currentUserName = nameInput;
+            saveStars();
+            document.getElementById('currentUserNameDisplay').innerText = currentUserName;
+            document.getElementById('nameModal').classList.add('hidden');
+        }
+
         // いいね機能
         function addClap(id) {
             if (userClaps.includes(id)) {
@@ -599,16 +671,22 @@
             }
         }
 
-        // コメント追加
+        // コメント追加（ここでもNGワードチェック付き！）
         function addComment(event, id) {
             event.preventDefault();
             const input = document.getElementById(`comment-input-${id}`);
             const commentText = input.value.trim();
+            
+            if (containsNGWord(commentText)) {
+                alert(currentLang === 'ja' ? "⚠️ 不適切な言葉が含まれているため送信できません。" : "Inappropriate words detected.");
+                return;
+            }
+
             if (commentText) {
                 const target = stars.find(s => s.id === id);
                 if (target) {
                     if (!target.comments) target.comments = [];
-                    target.comments.push(commentText);
+                    target.comments.push(`${currentUserName}: ${commentText}`);
                     saveStars();
                     input.value = '';
                     filterStars();
@@ -625,7 +703,6 @@
             }
         }
 
-        // 種類別フィルタ
         function filterByType(type) {
             currentType = type;
             ['all', 'star', 'planet', 'nebula', 'blackhole'].forEach(t => {
@@ -670,6 +747,9 @@
                 if (star.type === 'nebula') typeBadge = "🌌 星雲";
                 if (star.type === 'blackhole') typeBadge = "🕳️ ブラックホール";
 
+                // 📸 画像がある場合のHTML
+                const imgHtml = star.imgUrl ? `<div class="mb-4 h-40 overflow-hidden rounded-xl border border-cyan-500/20"><img src="${star.imgUrl}" alt="${star.name}" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-300" onerror="this.parentElement.style.display='none'"></div>` : '';
+
                 return `
                 <div class="glass-panel rounded-2xl p-6 relative overflow-hidden group hover:border-cyan-400/50 transition-all duration-300 shadow-xl flex flex-col justify-between">
                     <div class="absolute -right-10 -top-10 w-32 h-32 bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/10 transition-all"></div>
@@ -682,6 +762,7 @@
                             </div>
                         </div>
                         <h3 class="font-serif text-2xl font-bold text-white mb-2 group-hover:text-cyan-300 transition-colors">${star.name}</h3>
+                        ${imgHtml}
                         <p class="text-xs text-slate-300 font-sans mb-4 leading-relaxed">${star.notes}</p>
                     </div>
                     <div>
@@ -738,7 +819,6 @@
             renderStars(filtered);
         }
 
-        // ガチャモーダル
         function openStarGacha() {
             if (stars.length === 0) return;
             const randomStar = stars[Math.floor(Math.random() * stars.length)];
@@ -748,40 +828,55 @@
         }
         function closeStarGacha() { document.getElementById('gachaModal').classList.add('hidden'); }
 
-        // 登録モーダル
-        function openRegisterModal() { document.getElementById('registerModal').classList.remove('hidden'); }
+        function openRegisterModal() {
+            if (!currentUserName) {
+                openNameModal();
+                return;
+            }
+            document.getElementById('inputOwner').value = currentUserName;
+            document.getElementById('registerModal').classList.remove('hidden');
+        }
         function closeRegisterModal() { document.getElementById('registerModal').classList.add('hidden'); }
         function closeSuccessModal() { document.getElementById('successModal').classList.add('hidden'); }
 
-        // 💌 フィードバック（製作者への連絡）モーダル操作
         function openFeedbackModal() { document.getElementById('feedbackModal').classList.remove('hidden'); }
         function closeFeedbackModal() { document.getElementById('feedbackModal').classList.add('hidden'); }
 
         function handleFeedbackSubmit(e) {
             e.preventDefault();
-            const name = document.getElementById('feedbackName').value;
             const msg = document.getElementById('feedbackMessage').value;
-            
-            feedbacks.push({ name, msg, date: new Date().toISOString() });
+            if (containsNGWord(msg)) {
+                alert("⚠️ 不適切な言葉が含まれているため送信できません。");
+                return;
+            }
+            feedbacks.push({ name: currentUserName, msg, date: new Date().toISOString() });
             saveStars();
             closeFeedbackModal();
-            document.getElementById('feedbackName').value = '';
             document.getElementById('feedbackMessage').value = '';
-            alert(currentLang === 'ja' ? "製作者へメッセージを送信しました！ありがとうございます！✨" : "Message sent to creator! Thank you! ✨");
+            alert(currentLang === 'ja' ? "製作者へメッセージを送信しました！ありがとうございます！✨" : "Message sent! Thank you! ✨");
         }
 
         function handleRegisterSubmit(e) {
             e.preventDefault();
+            const notesInput = document.getElementById('inputNotes').value;
+            const nameInput = document.getElementById('inputName').value;
+
+            if (containsNGWord(notesInput) || containsNGWord(nameInput)) {
+                alert(currentLang === 'ja' ? "⚠️ 不適切な言葉が含まれているため登録できません。" : "Inappropriate words detected.");
+                return;
+            }
+
             const newIdNum = stars.length + 1;
             const newStar = {
                 id: `CAU-${String(newIdNum).padStart(3, '0')}`,
-                name: document.getElementById('inputName').value,
+                name: nameInput,
                 type: document.getElementById('inputType').value,
+                imgUrl: document.getElementById('inputImgUrl').value.trim(),
                 ra: document.getElementById('inputRA').value,
                 dec: document.getElementById('inputDec').value,
-                owner: document.getElementById('inputOwner').value,
+                owner: currentUserName,
                 date: new Date().toISOString().split('T')[0],
-                notes: document.getElementById('inputNotes').value || "New object.",
+                notes: notesInput || "New object.",
                 claps: 1,
                 comments: []
             };
@@ -833,6 +928,7 @@
         window.onload = function() {
             initStarfield();
             changeLanguage('ja');
+            checkUsername(); // 最初にユーザーネームをチェック！
             const searchInput = document.getElementById('searchInput');
             if (searchInput) searchInput.value = '';
             filterStars();
