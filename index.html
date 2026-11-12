@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" class="dark scroll-smooth">
 <head>
-    <meta name="google-site-verification" content="OZAgXz_vRHGM1XK9E7kbQ1TSuzT4zq5HqhIPEg0hscQ" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Civilian Astronomy Union (CAU) | Open Star Registry</title>
@@ -282,8 +281,8 @@
                 <p data-i18n="footerSub" class="text-xs font-mono text-slate-400 mt-1">Independent Observation Network • Initiated in Japan • Open to the World</p>
             </div>
             <div class="flex items-center gap-4">
-                <!-- Replace '#' with your actual X (Twitter) profile URL when hosting -->
-                <a href="https://x.com" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-lg astro-card text-xs font-mono text-sky-300 hover:text-white flex items-center gap-2">
+                <!-- X (Twitter) profile URL updated to your account -->
+                <a href="https://x.com/Kepler_1Trill_Z" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-lg astro-card text-xs font-mono text-sky-300 hover:text-white flex items-center gap-2">
                     <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
                     <span data-i18n="footerBtn">Follow & Vote on X</span>
                 </a>
@@ -1145,11 +1144,12 @@
             draw();
         }
 
-        // Initialize on window load
+        // Initialize on window load (With filterStars fix added)
         window.onload = function() {
             initStarfield();
             const initialLang = detectInitialLanguage();
             changeLanguage(initialLang);
+            filterStars(); // 最初に星カードを正しく描画する修正
         };
     </script>
 </body>
