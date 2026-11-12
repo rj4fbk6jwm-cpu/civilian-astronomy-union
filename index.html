@@ -4,7 +4,7 @@
     <meta name="google-site-verification" content="OZAgXz_vRHGM1XK9E7kbQ1TsuZT4zq5HqhIpEG0hscQ" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Civilian Astronomy Union (CAU) | みんなの星空図鑑</title>
+    <title>Civilian Astronomy Union (CAU) | みんなの宇宙・星空図鑑</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter, Space Mono, Cinzel -->
@@ -101,7 +101,7 @@
             </div>
             <button onclick="openStarGacha()" class="px-4 py-2 rounded-xl bg-purple-600/40 hover:bg-purple-600/60 border border-purple-400/40 text-purple-200 text-xs font-mono transition-all flex items-center space-x-2 whitespace-nowrap shadow">
                 <span>🎲</span>
-                <span id="btn-gacha">今日の星ガチャを引く</span>
+                <span id="btn-gacha">今日の宇宙ガチャを引く</span>
             </button>
         </div>
 
@@ -109,42 +109,51 @@
         <div class="text-center max-w-3xl mx-auto mb-12">
             <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-4">
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                <span id="registry-status">みんなで作るオープンな星空図鑑（いいね制限対応）</span>
+                <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑（全機能搭載）</span>
             </div>
             <h1 id="hero-title" class="font-serif text-4xl sm:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-r from-white via-slate-200 to-cyan-200 bg-clip-text text-transparent">
-                夜空の星に、お気に入りの名前を残しよう
+                宇宙の天体に、お気に入りの名前を残そう
             </h1>
             <p id="hero-desc" class="text-slate-300 text-base sm:text-lg leading-relaxed">
-                登録した星はデバイスに保存され消えません。いいねは1人1回まで！みんなでコメントを残して盛り上がろう。
+                星だけでなく、惑星やブラックホールなども登録可能！デバイスに保存され消えません。いいねやコメントで盛り上がろう。
             </p>
         </div>
 
-        <!-- 検索・カテゴリ・登録ボタン -->
+        <!-- 検索・カテゴリタブ・並び替え・登録ボタン -->
         <div class="glass-panel rounded-2xl p-4 sm:p-6 mb-8 shadow-2xl flex flex-col gap-4">
             <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div class="relative w-full md:w-96">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-cyan-400">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                     </span>
-                    <input type="text" id="searchInput" oninput="filterStars()" placeholder="星の名前やキーワードで検索..." 
+                    <input type="text" id="searchInput" oninput="filterStars()" placeholder="天体名やキーワードで検索..." 
                         class="w-full pl-12 pr-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-400 focus:outline-none transition-all">
                 </div>
 
                 <div class="flex items-center gap-3 w-full md:w-auto justify-end overflow-x-auto pb-2 md:pb-0">
+                    <!-- 並び替えセレクト -->
+                    <select id="sortSelect" onchange="filterStars()" class="px-3 py-3 rounded-xl glass-input text-xs font-mono text-cyan-300 focus:outline-none">
+                        <option value="newest">🕒 新着順</option>
+                        <option value="popular">🔥 人気順（いいね数）</option>
+                    </select>
+
                     <span id="stats-counter" class="text-xs font-mono text-cyan-400 px-3 py-2 rounded-xl bg-cyan-950/40 border border-cyan-500/20 whitespace-nowrap">
-                        登録された星: 6件
+                        登録天体: 6件
                     </span>
                     <button onclick="openRegisterModal()" class="px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-cosmos-950 font-bold text-sm tracking-wide shadow-lg shadow-cyan-500/20 transition-all duration-200 whitespace-nowrap flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        <span id="btn-register">星を登録する</span>
+                        <span id="btn-register">天体を登録する</span>
                     </button>
                 </div>
             </div>
 
+            <!-- カテゴリタブ（星・惑星・ブラックホールなど） -->
             <div class="flex items-center gap-2 overflow-x-auto pt-2 border-t border-cyan-900/30 text-xs font-mono">
-                <button onclick="filterByCategory('all')" id="cat-all" class="px-3 py-1.5 rounded-lg bg-cyan-500 text-cosmos-950 font-bold transition-all">✨ すべて</button>
-                <button onclick="filterByCategory('favorite')" id="cat-favorite" class="px-3 py-1.5 rounded-lg bg-cosmos-900/80 text-slate-300 hover:text-white border border-cyan-500/20 transition-all">⭐ お気に入り</button>
-                <button onclick="filterByCategory('emotional')" id="cat-emotional" class="px-3 py-1.5 rounded-lg bg-cosmos-900/80 text-slate-300 hover:text-white border border-cyan-500/20 transition-all">🌌 エモいメモ</button>
+                <button onclick="filterByType('all')" id="type-all" class="px-3 py-1.5 rounded-lg bg-cyan-500 text-cosmos-950 font-bold transition-all">✨ すべて</button>
+                <button onclick="filterByType('star')" id="type-star" class="px-3 py-1.5 rounded-lg bg-cosmos-900/80 text-slate-300 hover:text-white border border-cyan-500/20 transition-all">⭐ 恒星 (Star)</button>
+                <button onclick="filterByType('planet')" id="type-planet" class="px-3 py-1.5 rounded-lg bg-cosmos-900/80 text-slate-300 hover:text-white border border-cyan-500/20 transition-all">🪐 惑星 (Planet)</button>
+                <button onclick="filterByType('nebula')" id="type-nebula" class="px-3 py-1.5 rounded-lg bg-cosmos-900/80 text-slate-300 hover:text-white border border-cyan-500/20 transition-all">🌌 星雲・銀河</button>
+                <button onclick="filterByType('blackhole')" id="type-blackhole" class="px-3 py-1.5 rounded-lg bg-cosmos-900/80 text-slate-300 hover:text-white border border-cyan-500/20 transition-all">🕳️ ブラックホール</button>
             </div>
         </div>
 
@@ -158,8 +167,8 @@
             <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-cosmos-900 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
                 <svg class="w-8 h-8 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
-            <h3 id="no-results-title" class="font-serif text-xl font-medium text-slate-300 mb-2">星が見つかりませんでした</h3>
-            <p id="no-results-desc" class="text-slate-400 text-sm">条件に一致する星やキーワードが見つかりませんでした。</p>
+            <h3 id="no-results-title" class="font-serif text-xl font-medium text-slate-300 mb-2">天体が見つかりませんでした</h3>
+            <p id="no-results-desc" class="text-slate-400 text-sm">条件に一致する天体やキーワードが見つかりませんでした。</p>
         </div>
     </main>
 
@@ -169,7 +178,7 @@
             <div class="flex items-center justify-between mb-6">
                 <h3 class="font-serif text-2xl font-bold text-white flex items-center space-x-2">
                     <span>✨</span>
-                    <span id="modal-title">新しい星を登録する</span>
+                    <span id="modal-title">新しい天体を登録する</span>
                 </h3>
                 <button onclick="closeRegisterModal()" class="text-slate-400 hover:text-white p-2 rounded-lg bg-cosmos-900/50 border border-cyan-500/20">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -178,7 +187,16 @@
 
             <form id="starForm" onsubmit="handleRegisterSubmit(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-mono text-cyan-400 uppercase mb-1" id="label-starname">星の名前</label>
+                    <label class="block text-xs font-mono text-cyan-400 uppercase mb-1">天体の種類</label>
+                    <select id="inputType" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 focus:outline-none">
+                        <option value="star">⭐ 恒星 (Star)</option>
+                        <option value="planet">🪐 惑星 (Planet)</option>
+                        <option value="nebula">🌌 星雲・銀河 (Nebula / Galaxy)</option>
+                        <option value="blackhole">🕳️ ブラックホール (Black Hole)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-mono text-cyan-400 uppercase mb-1" id="label-starname">天体名称</label>
                     <input type="text" id="inputName" required placeholder="例: ノヴァ・プライム" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
                 </div>
                 <div class="grid grid-cols-2 gap-4">
@@ -197,7 +215,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-mono text-cyan-400 uppercase mb-1" id="label-notes">ひとことメモ・思い出</label>
-                    <textarea id="inputNotes" rows="3" placeholder="この星にまつわる思い出や、綺麗な星だったなどの感想..." class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none resize-none"></textarea>
+                    <textarea id="inputNotes" rows="3" placeholder="この天体にまつわる思い出や特徴..." class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none resize-none"></textarea>
                 </div>
                 <button type="submit" id="btn-submit-registry" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-cosmos-950 font-bold text-sm tracking-wider shadow-lg shadow-cyan-500/20 transition-all">
                     図鑑に登録する
@@ -206,15 +224,27 @@
         </div>
     </div>
 
-    <!-- 🎲 星ガチャ結果モーダル -->
+    <!-- 🎲 ガチャ結果モーダル -->
     <div id="gachaModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
         <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-purple-500/40 shadow-2xl text-center relative">
             <div class="text-4xl mb-3">🌟</div>
-            <h3 class="text-xs font-mono text-purple-400 uppercase tracking-widest mb-1">本日のランダム星ガチャ</h3>
+            <h3 class="text-xs font-mono text-purple-400 uppercase tracking-widest mb-1">本日のランダム宇宙ガチャ</h3>
             <h2 id="gachaStarName" class="font-serif text-3xl font-bold text-white mb-3">---</h2>
             <p id="gachaStarNotes" class="text-xs text-slate-300 font-sans mb-6 bg-cosmos-900/60 p-4 rounded-xl border border-purple-500/20">---</p>
             <button onclick="closeStarGacha()" class="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm shadow-lg shadow-purple-600/30 transition-all">
                 閉じる
+            </button>
+        </div>
+    </div>
+
+    <!-- 🎉 登録おめでとう演出ポップアップ -->
+    <div id="successModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
+        <div class="glass-panel rounded-3xl max-w-sm w-full p-6 border border-cyan-500/40 shadow-2xl text-center relative animate-bounce">
+            <div class="text-5xl mb-3">🌌</div>
+            <h3 class="font-serif text-2xl font-bold text-white mb-2">登録完了！</h3>
+            <p class="text-xs text-cyan-300 mb-4">新しい天体が宇宙の図鑑に刻まれました！</p>
+            <button onclick="closeSuccessModal()" class="w-full py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-cosmos-950 font-bold text-xs shadow-lg transition-all">
+                やったね！
             </button>
         </div>
     </div>
@@ -236,62 +266,49 @@
     <!-- JavaScript Application Logic -->
     <script>
         const defaultStars = [
-            { id: "CAU-001", name: "Aethelgard", ra: "03h 47m", dec: "+24° 15′", owner: "Orion Vanguard", date: "2026-01-15", notes: "穏やかな光を放つお気に入りのオレンジ色の星。", claps: 12, category: "favorite", comments: ["綺麗ですね！", "私も今度探してみます"] },
-            { id: "CAU-002", name: "Vesper-9", ra: "18h 36m", dec: "-13° 49′", owner: "Lyra Collective", date: "2026-02-02", notes: "双眼鏡でも綺麗に見えるお気に入りのスポット。", claps: 8, category: "emotional", comments: ["双眼鏡で見てみます！"] },
-            { id: "CAU-003", name: "Kaelum Prime", ra: "22h 11m", dec: "+45° 12′", owner: "Astra Guild", date: "2026-02-18", notes: "冬の夜空でひときわ輝いていた美しい星。", claps: 19, category: "favorite", comments: [] },
-            { id: "CAU-004", name: "Solaria Minor", ra: "06h 45m", dec: "-16° 42′", owner: "Sirius Independent", date: "2026-03-10", notes: "肉眼でもはっきり見つけられるお馴染みの星。", claps: 5, category: "emotional", comments: [] },
-            { id: "CAU-005", name: "Zephyria", ra: "12h 21m", dec: "+57° 01′", owner: "Borealis Group", date: "2026-04-05", notes: "静かな夜の観測中に偶然見つけたお気に入り。", claps: 14, category: "favorite", comments: [] },
-            { id: "CAU-006", name: "Nexus-Alpha", ra: "17h 45m", dec: "-29° 00′", owner: "Core Vanguard", date: "2026-05-20", notes: "夏の天の川の近くで輝く特別な星。", claps: 22, category: "emotional", comments: ["夏の大三角の近くかな？"] }
+            { id: "CAU-001", name: "Aethelgard", type: "star", ra: "03h 47m", dec: "+24° 15′", owner: "Orion Vanguard", date: "2026-01-15", notes: "穏やかな光を放つお気に入りのオレンジ色の星。", claps: 12, comments: ["綺麗ですね！"] },
+            { id: "CAU-002", name: "Vesper-9", type: "planet", ra: "18h 36m", dec: "-13° 49′", owner: "Lyra Collective", date: "2026-02-02", notes: "青く輝く美しいガス惑星。", claps: 25, comments: ["リングが綺麗そう！"] },
+            { id: "CAU-003", name: "Kaelum Prime", type: "star", ra: "22h 11m", dec: "+45° 12′", owner: "Astra Guild", date: "2026-02-18", notes: "冬の夜空でひときわ輝いていた美しい星。", claps: 19, comments: [] },
+            { id: "CAU-004", name: "Solaria Minor", type: "nebula", ra: "06h 45m", dec: "-16° 42′", owner: "Sirius Independent", date: "2026-03-10", notes: "色鮮やかなガスが広がる美しい星雲。", claps: 30, comments: ["写真映えしそう！"] },
+            { id: "CAU-005", name: "Zephyria", type: "star", ra: "12h 21m", dec: "+57° 01′", owner: "Borealis Group", date: "2026-04-05", notes: "静かな夜の観測中に偶然見つけたお気に入り。", claps: 14, comments: [] },
+            { id: "CAU-006", name: "Gargantua-X", type: "blackhole", ra: "17h 45m", dec: "-29° 00′", owner: "Core Vanguard", date: "2026-05-20", notes: "周囲の光を飲み込む巨大なブラックホール。", claps: 45, comments: ["重力がすごそう…！"] }
         ];
 
-        let stars = JSON.parse(localStorage.getItem('cau_stars')) || defaultStars;
-        // ユーザーが「どの星にいいねしたか」を記憶するリスト
-        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps')) || [];
+        let stars = JSON.parse(localStorage.getItem('cau_stars_v2')) || defaultStars;
+        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v2')) || [];
 
         function saveStars() {
-            localStorage.setItem('cau_stars', JSON.stringify(stars));
-            localStorage.setItem('cau_user_claps', JSON.stringify(userClaps));
+            localStorage.setItem('cau_stars_v2', JSON.stringify(stars));
+            localStorage.setItem('cau_user_claps_v2', JSON.stringify(userClaps));
         }
 
         let currentLang = 'ja';
-        let currentCategory = 'all';
+        let currentType = 'all';
 
         const i18n = {
             ja: {
-                status: "みんなで作るオープンな星空図鑑（いいね制限対応）",
-                title: "夜空の星に、お気に入りの名前を残しよう",
-                desc: "登録した星はデバイスに保存され消えません。いいねは1人1回まで！みんなでコメントを残して盛り上がろう。",
-                searchPlaceholder: "星の名前やキーワードで検索...",
-                register: "星を登録する",
-                noResultsTitle: "星が見つかりませんでした",
-                noResultsDesc: "条件に一致する星やキーワードが見つかりませんでした。",
-                modalTitle: "新しい星を登録する",
-                labelName: "星の名前",
-                labelRA: "位置 (赤経 RA)",
-                labelDec: "位置 (赤緯 DEC)",
-                labelOwner: "登録者のお名前",
-                labelNotes: "ひとことメモ・思い出",
-                btnSubmit: "図鑑に登録する",
-                gachaBtn: "今日の星ガチャを引く",
+                status: "みんなで作るオープンな宇宙・星空図鑑（全機能搭載）",
+                title: "宇宙の天体に、お気に入りの名前を残しよう",
+                desc: "星だけでなく、惑星やブラックホールなども登録可能！デバイスに保存され消えません。いいねやコメントで盛り上がろう。",
+                searchPlaceholder: "天体名やキーワードで検索...",
+                register: "天体を登録する",
+                noResultsTitle: "天体が見つかりませんでした",
+                noResultsDesc: "条件に一致する天体やキーワードが見つかりませんでした。",
+                modalTitle: "新しい天体を登録する",
+                gachaBtn: "今日の宇宙ガチャを引く",
                 highlightTitle: "今夜のおすすめ観測",
                 highlightDesc: "空気が澄んだ夜は、Aethelgard（CAU-001）の方向をのんびり眺めてみよう。"
             },
             en: {
-                status: "Community-driven Open Star Registry (Clap Limit)",
-                title: "Claim Your Place Among the Stars",
-                desc: "Registered stars are saved on your device. One clap per star!",
-                searchPlaceholder: "Search by star name or keyword...",
-                register: "Register Star",
-                noResultsTitle: "No stars found",
+                status: "Community-driven Space Registry (All Features)",
+                title: "Claim Your Place Among the Cosmos",
+                desc: "Register stars, planets, and black holes! Saved on your device.",
+                searchPlaceholder: "Search celestial objects...",
+                register: "Register Object",
+                noResultsTitle: "No objects found",
                 noResultsDesc: "No celestial objects match your query.",
-                modalTitle: "Register a New Star",
-                labelName: "Star Name",
-                labelRA: "Right Ascension (RA)",
-                labelDec: "Declination (DEC)",
-                labelOwner: "Registrant / Owner",
-                labelNotes: "Personal Notes / Memories",
-                btnSubmit: "Submit to Registry",
-                gachaBtn: "Draw Star Gacha",
+                modalTitle: "Register a New Celestial Object",
+                gachaBtn: "Draw Space Gacha",
                 highlightTitle: "Tonight's Highlight",
                 highlightDesc: "On a clear night, take a moment to look toward Aethelgard (CAU-001)."
             }
@@ -311,33 +328,24 @@
             document.getElementById('no-results-title').innerText = t.noResultsTitle;
             document.getElementById('no-results-desc').innerText = t.noResultsDesc;
             document.getElementById('modal-title').innerText = t.modalTitle;
-            document.getElementById('label-starname').innerText = t.labelName;
-            document.getElementById('label-ra').innerText = t.labelRA;
-            document.getElementById('label-dec').innerText = t.labelDec;
-            document.getElementById('label-owner').innerText = t.labelOwner;
-            document.getElementById('label-notes').innerText = t.labelNotes;
-            document.getElementById('btn-submit-registry').innerText = t.btnSubmit;
             document.getElementById('btn-gacha').innerText = t.gachaBtn;
             document.getElementById('highlight-title').innerText = t.highlightTitle;
-            document.getElementById('highlight-desc').innerText = t.highlightDesc;
 
             filterStars();
         }
 
         function detectInitialLanguage() { return 'ja'; }
 
-        // いいね（1人1回制限付き）
+        // いいね（1人1回制限）
         function addClap(id) {
-            // すでにこの星にいいねしているかチェック
             if (userClaps.includes(id)) {
-                alert(currentLang === 'ja' ? "この星にはすでに「観測したよ」を送っています！" : "You have already clapped for this star!");
+                alert(currentLang === 'ja' ? "この天体にはすでに「観測したよ」を送っています！" : "You have already clapped for this object!");
                 return;
             }
-
             const target = stars.find(s => s.id === id);
             if (target) {
                 target.claps = (target.claps || 0) + 1;
-                userClaps.push(id); // 記録する
+                userClaps.push(id);
                 saveStars();
                 filterStars();
             }
@@ -360,11 +368,21 @@
             }
         }
 
-        function filterByCategory(cat) {
-            currentCategory = cat;
-            ['all', 'favorite', 'emotional'].forEach(c => {
-                const btn = document.getElementById(`cat-${c}`);
-                if (c === cat) {
+        // 天体削除機能
+        function deleteStar(id) {
+            if (confirm(currentLang === 'ja' ? "この天体を図鑑から削除しますか？" : "Delete this celestial object?")) {
+                stars = stars.filter(s => s.id !== id);
+                saveStars();
+                filterStars();
+            }
+        }
+
+        // 種類別フィルタ
+        function filterByType(type) {
+            currentType = type;
+            ['all', 'star', 'planet', 'nebula', 'blackhole'].forEach(t => {
+                const btn = document.getElementById(`type-${t}`);
+                if (t === type) {
                     btn.className = 'px-3 py-1.5 rounded-lg bg-cyan-500 text-cosmos-950 font-bold transition-all';
                 } else {
                     btn.className = 'px-3 py-1.5 rounded-lg bg-cosmos-900/80 text-slate-300 hover:text-white border border-cyan-500/20 transition-all';
@@ -378,8 +396,7 @@
             const noResults = document.getElementById('noResults');
             const counter = document.getElementById('stats-counter');
 
-            const countText = currentLang === 'ja' ? `登録された星: ${data.length}件` : `Cataloged Stars: ${data.length}`;
-            counter.innerText = countText;
+            counter.innerText = currentLang === 'ja' ? `登録天体: ${data.length}件` : `Objects: ${data.length}`;
 
             if (data.length === 0) {
                 grid.innerHTML = '';
@@ -393,7 +410,6 @@
                     ? star.comments.map(c => `<div class="bg-cosmos-900/80 px-2.5 py-1 rounded-lg text-[11px] text-slate-300 mb-1 border border-cyan-500/10">💬 ${c}</div>`).join('')
                     : `<div class="text-[11px] text-slate-500 italic mb-1">まだコメントはありません</div>`;
 
-                // すでにいいね済みかどうかでボタンの見た目を変える
                 const alreadyClapped = userClaps.includes(star.id);
                 const clapBtnClass = alreadyClapped 
                     ? "w-full py-2 mb-3 rounded-xl bg-cyan-500/20 border border-cyan-500/50 text-cyan-200 text-xs font-mono flex items-center justify-center space-x-2 cursor-default" 
@@ -401,13 +417,22 @@
                 
                 const clapBtnText = alreadyClapped ? "✨ 観測済み（いいね完了）" : "✨ 観測したよ（いいね）";
 
+                // 種類のアイコンと表示名
+                let typeBadge = "⭐ 恒星";
+                if (star.type === 'planet') typeBadge = "🪐 惑星";
+                if (star.type === 'nebula') typeBadge = "🌌 星雲・銀河";
+                if (star.type === 'blackhole') typeBadge = "🕳️ ブラックホール";
+
                 return `
                 <div class="glass-panel rounded-2xl p-6 relative overflow-hidden group hover:border-cyan-400/50 transition-all duration-300 shadow-xl flex flex-col justify-between">
                     <div class="absolute -right-10 -top-10 w-32 h-32 bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/10 transition-all"></div>
                     <div>
                         <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-mono text-cyan-400 bg-cyan-950/60 px-2.5 py-1 rounded-lg border border-cyan-500/20">${star.id}</span>
-                            <span class="text-xs font-mono text-slate-400">${star.date}</span>
+                            <span class="text-xs font-mono text-cyan-400 bg-cyan-950/60 px-2.5 py-1 rounded-lg border border-cyan-500/20">${star.id} (${typeBadge})</span>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-mono text-slate-400">${star.date}</span>
+                                <button onclick="deleteStar('${star.id}')" class="text-slate-500 hover:text-red-400 text-xs" title="削除">🗑️</button>
+                            </div>
                         </div>
                         <h3 class="font-serif text-2xl font-bold text-white mb-2 group-hover:text-cyan-300 transition-colors">${star.name}</h3>
                         <p class="text-xs text-slate-300 font-sans mb-4 leading-relaxed">${star.notes}</p>
@@ -424,13 +449,13 @@
                             </div>
                         </div>
 
-                        <!-- 観測したよ（いいね）ボタン（1回制限付き） -->
+                        <!-- 観測したよボタン -->
                         <button onclick="addClap('${star.id}')" class="${clapBtnClass}">
                             <span>${clapBtnText}</span>
                             <span class="bg-cyan-500/30 px-2 py-0.5 rounded-full text-white">${star.claps || 0}</span>
                         </button>
 
-                        <!-- コメント表示＆投稿エリア -->
+                        <!-- コメントエリア -->
                         <div class="border-t border-cyan-900/20 pt-3">
                             <div class="max-h-24 overflow-y-auto mb-2 space-y-1">
                                 ${commentsHtml}
@@ -448,15 +473,24 @@
         function filterStars() {
             const searchInput = document.getElementById('searchInput');
             const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            const sortMode = document.getElementById('sortSelect').value;
             
-            const filtered = stars.filter(s => {
+            let filtered = stars.filter(s => {
                 const matchesQuery = s.name.toLowerCase().includes(query) ||
                                      s.id.toLowerCase().includes(query) ||
                                      s.owner.toLowerCase().includes(query) ||
                                      s.notes.toLowerCase().includes(query);
-                const matchesCategory = (currentCategory === 'all') || (s.category === currentCategory);
-                return matchesQuery && matchesCategory;
+                const matchesType = (currentType === 'all') || (s.type === currentType);
+                return matchesQuery && matchesType;
             });
+
+            // 並び替え処理
+            if (sortMode === 'popular') {
+                filtered.sort((a, b) => (b.claps || 0) - (a.claps || 0));
+            } else {
+                filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+            }
+
             renderStars(filtered);
         }
 
@@ -480,27 +514,34 @@
             document.getElementById('registerModal').classList.add('hidden');
         }
 
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
         function handleRegisterSubmit(e) {
             e.preventDefault();
             const newIdNum = stars.length + 1;
             const newStar = {
                 id: `CAU-${String(newIdNum).padStart(3, '0')}`,
                 name: document.getElementById('inputName').value,
+                type: document.getElementById('inputType').value,
                 ra: document.getElementById('inputRA').value,
                 dec: document.getElementById('inputDec').value,
                 owner: document.getElementById('inputOwner').value,
                 date: new Date().toISOString().split('T')[0],
-                notes: document.getElementById('inputNotes').value || "新しい星の思い出。",
+                notes: document.getElementById('inputNotes').value || "新しい天体の思い出。",
                 claps: 1,
-                category: 'favorite',
                 comments: []
             };
             stars.unshift(newStar);
-            userClaps.push(newStar.id); // 自分自分が登録した星は最初から「いいね済み」にしておく
+            userClaps.push(newStar.id);
             saveStars();
             closeRegisterModal();
             document.getElementById('starForm').reset();
             filterStars();
+
+            // 🎉 登録おめでとう演出ポップアップを表示
+            document.getElementById('successModal').classList.remove('hidden');
         }
 
         // Canvas Starfield Animation
@@ -555,13 +596,6 @@
             
             draw();
         };
-    </script>window.onload = function() {
-    // 💡 ここにリセット用の命令を一時的に入れる
-    localStorage.removeItem('cau_stars');
-    localStorage.removeItem('cau_user_claps');
-    
-    initStarfield();
-    // ...（以下略）
-
+    </script>
 </body>
 </html>
