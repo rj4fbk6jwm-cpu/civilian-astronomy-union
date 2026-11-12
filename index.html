@@ -555,6 +555,13 @@
             
             draw();
         };
-    </script>
+    </script>window.onload = function() {
+    // 💡 ここにリセット用の命令を一時的に入れる
+    localStorage.removeItem('cau_stars');
+    localStorage.removeItem('cau_user_claps');
+    
+    initStarfield();
+    // ...（以下略）
+
 </body>
 </html>
