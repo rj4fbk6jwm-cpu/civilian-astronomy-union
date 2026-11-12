@@ -78,10 +78,15 @@
                 </div>
             </div>
             
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-3">
                 <button onclick="openNameModal()" class="hidden sm:flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-cosmos-900 border border-cyan-500/30 text-xs font-mono text-cyan-300">
                     <span>👤</span>
                     <span id="currentUserNameDisplay">ゲスト</span>
+                </button>
+
+                <!-- 創設者専用の称号管理ボタン -->
+                <button id="adminPanelBtn" onclick="openAdminModal()" class="hidden px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-400/50 text-amber-300 text-xs font-mono transition-all">
+                    👑 称号管理
                 </button>
 
                 <select id="langSelect" onchange="changeLanguage(this.value)" class="bg-cosmos-900/90 text-cyan-300 border border-cyan-500/30 rounded-lg px-3 py-1.5 text-xs font-mono focus:outline-none">
@@ -125,13 +130,13 @@
         <div class="text-center max-w-3xl mx-auto mb-12">
             <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-4">
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑（開発者マーク対応）</span>
+                <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑（創設者自動公式システム）</span>
             </div>
             <h1 id="hero-title" class="font-serif text-4xl sm:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-r from-white via-slate-200 to-cyan-200 bg-clip-text text-transparent">
                 宇宙の天体に、お気に入りの名前を残しよう
             </h1>
             <p id="hero-desc" class="text-slate-300 text-base sm:text-lg leading-relaxed">
-                開発者・運営の名前の横には専用の公式マークがつきます！デバイスに保存され消えません。
+                最初にooyosinoboriと設定したあなたに公式マーク！デバイスに保存され消えません。
             </p>
         </div>
 
@@ -190,16 +195,44 @@
         <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-cyan-500/40 shadow-2xl text-center relative">
             <div class="text-4xl mb-3">👤</div>
             <h3 class="font-serif text-2xl font-bold text-white mb-2" id="name-modal-title">あなたの名前（ニックネーム）を教えてね</h3>
-            <p class="text-xs text-slate-300 mb-4" id="name-modal-desc">図鑑で天体を登録したりコメントするときに使われます。</p>
+            <p class="text-xs text-slate-300 mb-4" id="name-modal-desc">最初に「ooyosinobori」と入力した人だけが創設者公式マークを獲得できます！</p>
             <form onsubmit="handleNameSubmit(event)" class="space-y-4">
                 <div>
-                    <input type="text" id="inputUsername" required placeholder="例: アストロ君" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none text-center">
+                    <input type="text" id="inputUsername" required placeholder="例: ooyosinobori" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none text-center">
                     <p id="nameErrorMsg" class="text-xs text-red-400 mt-2 hidden">⚠️ 不適切な言葉が含まれているため、その名前は使用できません。</p>
                 </div>
                 <button type="submit" id="name-submit-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-cosmos-950 font-bold text-sm shadow-lg transition-all">
                     決定する
                 </button>
             </form>
+        </div>
+    </div>
+
+    <!-- 👑 称号管理（準公式マーク授与）モーダル (創設者専用) -->
+    <div id="adminModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
+        <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-amber-500/40 shadow-2xl relative">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-serif text-xl font-bold text-amber-300 flex items-center space-x-2">
+                    <span>👑</span>
+                    <span>準公式マークの管理</span>
+                </h3>
+                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white p-2 rounded-lg bg-cosmos-900/50 border border-cyan-500/20">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <p class="text-xs text-slate-300 mb-4">準公式マークを与えたいユーザー名を入力してください。</p>
+            <form onsubmit="handleGrantSemiOfficial(event)" class="space-y-4">
+                <div>
+                    <input type="text" id="targetSemiUser" required placeholder="ユーザー名を入力" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
+                </div>
+                <button type="submit" class="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm shadow-lg transition-all">
+                    ⭐ 準公式マーク（SEMI-OFFICIAL）を付与する
+                </button>
+            </form>
+            <div class="mt-6 border-t border-cyan-900/30 pt-4">
+                <h4 class="text-xs font-mono text-cyan-400 mb-2">現在の準公式メンバー:</h4>
+                <div id="semiOfficialList" class="text-xs text-slate-300 max-h-24 overflow-y-auto space-y-1"></div>
+            </div>
         </div>
     </div>
 
@@ -331,32 +364,40 @@
             return NG_WORDS.some(word => lower.includes(word));
         }
 
-        // 🛡️ 開発者・運営の名前（ここに自分の名前を設定すると、自動で公式バッジがつくよ！）
-        const DEVELOPER_NAMES = ["C.A.U. Official", "ooyosinobori", "CAU Admin"];
+        // 👑 創設者（最初に名前を設定したあなた）のユーザーネーム
+        const CREATOR_NAME = "ooyosinobori";
 
-        function isDeveloper(name) {
-            return DEVELOPER_NAMES.includes(name);
+        // 🌟 準公式メンバーのリスト（LocalStorageで管理）
+        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v2')) || [];
+
+        function isMainDeveloper(name) {
+            return name.toLowerCase() === CREATOR_NAME.toLowerCase();
+        }
+
+        function isSemiOfficial(name) {
+            return semiOfficialUsers.includes(name);
         }
 
         const defaultStars = [
-            { id: "CAU-001", name: "Aethelgard", type: "star", imgUrl: "", ra: "03h 47m", dec: "+24° 15′", owner: "C.A.U. Official", date: "2026-01-15", notes: "連合本部が管理する公式認定のオレンジ色の恒星。", claps: 42, comments: ["⚡ 公式データです"] },
+            { id: "CAU-001", name: "Aethelgard", type: "star", imgUrl: "", ra: "03h 47m", dec: "+24° 15′", owner: "ooyosinobori", date: "2026-01-15", notes: "創設者ooyosinoboriが管理する公式認定のオレンジ色の恒星。", claps: 42, comments: ["⚡ 公式データです"] },
             { id: "CAU-002", name: "Vesper-9", type: "planet", imgUrl: "", ra: "18h 36m", dec: "-13° 49′", owner: "Lyra Collective", date: "2026-02-02", notes: "青く輝く美しいガス惑星。", claps: 25, comments: ["リングが綺麗そう！"] },
             { id: "CAU-003", name: "Kaelum Prime", type: "star", imgUrl: "", ra: "22h 11m", dec: "+45° 12′", owner: "Astra Guild", date: "2026-02-18", notes: "冬の夜空でひときわ輝いていた美しい星。", claps: 19, comments: [] },
             { id: "CAU-004", name: "Solaria Minor", type: "nebula", imgUrl: "", ra: "06h 45m", dec: "-16° 42′", owner: "Sirius Independent", date: "2026-03-10", notes: "色鮮やかなガスが広がる美しい星雲。", claps: 30, comments: ["写真映えしそう！"] },
             { id: "CAU-005", name: "Zephyria", type: "star", imgUrl: "", ra: "12h 21m", dec: "+57° 01′", owner: "Borealis Group", date: "2026-04-05", notes: "静かな夜の観測中に偶然見つけたお気に入り。", claps: 14, comments: [] },
-            { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", owner: "C.A.U. Official", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
+            { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", owner: "ooyosinobori", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
         ];
 
-        let stars = JSON.parse(localStorage.getItem('cau_stars_v6')) || defaultStars;
-        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v6')) || [];
-        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v6')) || [];
+        let stars = JSON.parse(localStorage.getItem('cau_stars_v8')) || defaultStars;
+        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v8')) || [];
+        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v8')) || [];
         let currentUserName = localStorage.getItem('cau_username') || '';
 
         function saveStars() {
-            localStorage.setItem('cau_stars_v6', JSON.stringify(stars));
-            localStorage.setItem('cau_user_claps_v6', JSON.stringify(userClaps));
-            localStorage.setItem('cau_feedbacks_v6', JSON.stringify(feedbacks));
+            localStorage.setItem('cau_stars_v8', JSON.stringify(stars));
+            localStorage.setItem('cau_user_claps_v8', JSON.stringify(userClaps));
+            localStorage.setItem('cau_feedbacks_v8', JSON.stringify(feedbacks));
             localStorage.setItem('cau_username', currentUserName);
+            localStorage.setItem('cau_semi_officials_v2', JSON.stringify(semiOfficialUsers));
         }
 
         let currentLang = 'ja';
@@ -366,7 +407,7 @@
             ja: {
                 status: "みんなで作るオープンな宇宙・星空図鑑",
                 title: "宇宙の天体に、お気に入りの名前を残しよう",
-                desc: "開発者・運営の名前の横には専用の公式マークがつきます！デバイスに保存され消えません。",
+                desc: "最初にooyosinoboriと設定したあなたに公式マーク！デバイスに保存され消えません。",
                 searchKeyword: "天体名やキーワードで検索...",
                 registerBtn: "天体を登録する",
                 gachaBtn: "今日の宇宙ガチャ",
@@ -402,7 +443,7 @@
             en: {
                 status: "Community-driven Space Registry",
                 title: "Claim Your Place Among the Cosmos",
-                desc: "Developer & admin names feature official badges!",
+                desc: "Official badge for the first user 'ooyosinobori'!",
                 searchKeyword: "Search celestial objects...",
                 registerBtn: "Register Object",
                 gachaBtn: "Space Gacha",
@@ -438,7 +479,7 @@
             zh: {
                 status: "社区驱动的太空星空图鉴",
                 title: "在宇宙天体中留下你喜爱的名字",
-                desc: "开发者和管理员名称带有专属官方认证标志！",
+                desc: "授予最早设置 ooyosinobori 的用户的官方标志！",
                 searchKeyword: "搜索天体名称...",
                 registerBtn: "注册天体",
                 gachaBtn: "宇宙抽奖",
@@ -474,7 +515,7 @@
             es: {
                 status: "Registro Espacial Comunitario",
                 title: "Deja tu nombre favorito en el cosmos",
-                desc: "¡Los nombres de desarrolladores tienen insignias oficiales!",
+                desc: "¡Insignia oficial para el primer usuario ooyosinobori!",
                 searchKeyword: "Buscar objetos celestes...",
                 registerBtn: "Registrar Objeto",
                 gachaBtn: "Gacha Espacial",
@@ -510,7 +551,7 @@
             fr: {
                 status: "Registre Spatial Communautaire",
                 title: "Laissez votre empreinte dans le cosmos",
-                desc: "Les noms des développeurs affichent des badges officiels !",
+                desc: "Badge officiel pour le premier utilisateur ooyosinobori !",
                 searchKeyword: "Rechercher des objets...",
                 registerBtn: "Enregistrer",
                 gachaBtn: "Gacha Spatial",
@@ -546,7 +587,7 @@
             de: {
                 status: "Gemeinschaftliches Sternenregister",
                 title: "Hinterlasse deinen Namen im Kosmos",
-                desc: "Namen von Entwicklern tragen offizielle Abzeichen!",
+                desc: "Offizielles Abzeichen für den ersten Nutzer ooyosinobori!",
                 searchKeyword: "Himmelskörper suchen...",
                 registerBtn: "Objekt registrieren",
                 gachaBtn: "Weltraum-Gacha",
@@ -615,7 +656,7 @@
             document.getElementById('label-notes').innerText = t.labelNotes;
             document.getElementById('btn-submit-registry').innerText = t.submitReg;
             document.getElementById('nav-feedback-btn').innerText = t.feedbackBtnNav;
-            document.getElementById('footer-feedback-link').innerText = t.feedbackLinkFooter;
+            document.getElementById('footer-feedback-link').innerText = t.footerFeedbackLink || "製作者へ改善メッセージを送る";
             document.getElementById('feedback-modal-title').innerText = t.feedbackModalTitle;
             document.getElementById('feedback-desc').innerText = t.feedbackDesc;
             document.getElementById('feedback-submit-btn').innerText = t.feedbackSubmit;
@@ -630,18 +671,26 @@
 
         function checkUsername() {
             if (!currentUserName) {
-                document.getElementById('nameModal').classList.remove('hidden');
-            } else {
-                updateUserDisplay();
+                // 初回は自動で「ooyosinobori」を初期値としてセットしてあげるか、入力を促す
+                currentUserName = "ooyosinobori";
+                saveStars();
             }
+            updateUserDisplay();
         }
 
         function updateUserDisplay() {
             const displayEl = document.getElementById('currentUserNameDisplay');
-            if (isDeveloper(currentUserName)) {
-                displayEl.innerHTML = `${currentUserName} <span class="text-amber-400 ml-1">⚡ OFFICIAL</span>`;
+            const adminBtn = document.getElementById('adminPanelBtn');
+
+            if (isMainDeveloper(currentUserName)) {
+                displayEl.innerHTML = `${currentUserName} <span class="text-amber-400 ml-1 font-bold">⚡ OFFICIAL</span>`;
+                adminBtn.classList.remove('hidden'); // 創設者ooyosinobori君だけ管理ボタンが出る！
+            } else if (isSemiOfficial(currentUserName)) {
+                displayEl.innerHTML = `${currentUserName} <span class="text-cyan-300 ml-1 font-bold">⭐ SEMI-OFFICIAL</span>`;
+                adminBtn.classList.add('hidden');
             } else {
                 displayEl.innerText = currentUserName;
+                adminBtn.classList.add('hidden');
             }
         }
 
@@ -666,6 +715,45 @@
             saveStars();
             updateUserDisplay();
             document.getElementById('nameModal').classList.add('hidden');
+            filterStars();
+        }
+
+        // 👑 称号管理モーダル (創設者専用)
+        function openAdminModal() {
+            updateSemiOfficialList();
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.add('hidden');
+        }
+
+        function handleGrantSemiOfficial(e) {
+            e.preventDefault();
+            const targetName = document.getElementById('targetSemiUser').value.trim();
+            if (targetName && !semiOfficialUsers.includes(targetName)) {
+                semiOfficialUsers.push(targetName);
+                saveStars();
+                document.getElementById('targetSemiUser').value = '';
+                updateSemiOfficialList();
+                filterStars();
+                alert(`「${targetName}」さんに準公式マークを付与しました！`);
+            }
+        }
+
+        function updateSemiOfficialList() {
+            const listEl = document.getElementById('semiOfficialList');
+            if (semiOfficialUsers.length === 0) {
+                listEl.innerHTML = '<span class="italic text-slate-500">まだ誰もいません</span>';
+            } else {
+                listEl.innerHTML = semiOfficialUsers.map(u => `<div class="flex justify-between items-center bg-cosmos-900 px-2 py-1 rounded"><span>⭐ ${u}</span><button onclick="removeSemiOfficial('${u}')" class="text-red-400 hover:text-red-300 text-[10px]">削除</button></div>`).join('');
+            }
+        }
+
+        function removeSemiOfficial(name) {
+            semiOfficialUsers = semiOfficialUsers.filter(u => u !== name);
+            saveStars();
+            updateSemiOfficialList();
+            filterStars();
         }
 
         function addClap(id) {
@@ -696,8 +784,10 @@
                 const target = stars.find(s => s.id === id);
                 if (target) {
                     if (!target.comments) target.comments = [];
-                    // コメント主が開発者の場合はマークをつける
-                    const commenterDisplay = isDeveloper(currentUserName) ? `${currentUserName} ⚡` : currentUserName;
+                    let commenterDisplay = currentUserName;
+                    if (isMainDeveloper(currentUserName)) commenterDisplay += " ⚡";
+                    else if (isSemiOfficial(currentUserName)) commenterDisplay += " ⭐";
+
                     target.comments.push(`${commenterDisplay}: ${commentText}`);
                     saveStars();
                     input.value = '';
@@ -758,11 +848,13 @@
                 if (star.type === 'nebula') typeBadge = "🌌 星雲";
                 if (star.type === 'blackhole') typeBadge = "🕳️ ブラックホール";
 
-                // ⚡ オーナー（投稿者）が開発者の場合に名前の横に公式マークを表示
-                const ownerIsDev = isDeveloper(star.owner);
-                const ownerDisplay = ownerIsDev 
-                    ? `<span class="text-amber-400 font-bold flex items-center space-x-1"><span>${star.owner}</span><span class="bg-amber-500/20 border border-amber-400/50 text-amber-300 px-1.5 py-0.2 rounded text-[9px]">⚡ OFFICIAL</span></span>` 
-                    : `<span class="text-cyan-400">${star.owner}</span>`;
+                // ⚡ 創設者 or ⭐ 準公式マークの判定
+                let ownerDisplay = `<span class="text-cyan-400">${star.owner}</span>`;
+                if (isMainDeveloper(star.owner)) {
+                    ownerDisplay = `<span class="text-amber-400 font-bold flex items-center space-x-1"><span>${star.owner}</span><span class="bg-amber-500/20 border border-amber-400/50 text-amber-300 px-1.5 py-0.2 rounded text-[9px]">⚡ OFFICIAL</span></span>`;
+                } else if (isSemiOfficial(star.owner)) {
+                    ownerDisplay = `<span class="text-cyan-300 font-bold flex items-center space-x-1"><span>${star.owner}</span><span class="bg-cyan-500/20 border border-cyan-400/50 text-cyan-200 px-1.5 py-0.2 rounded text-[9px]">⭐ SEMI</span></span>`;
+                }
 
                 const imgHtml = star.imgUrl ? `<div class="mb-4 h-40 overflow-hidden rounded-xl border border-cyan-500/20"><img src="${star.imgUrl}" alt="${star.name}" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-300" onerror="this.parentElement.style.display='none'"></div>` : '';
 
@@ -839,7 +931,7 @@
             if (stars.length === 0) return;
             const randomStar = stars[Math.floor(Math.random() * stars.length)];
             document.getElementById('gachaStarName').innerText = `${randomStar.name} (${randomStar.id})`;
-            document.getElementById('gachaStarNotes').innerText = `「${randomStar.notes}」\n(Owner: ${randomStar.owner})`;
+            document.getElementById('gachaStarNotes').innerText = `(" + `「${randomStar.notes}」\n(Owner: ${randomStar.owner})`;
             document.getElementById('gachaModal').classList.remove('hidden');
         }
         function closeStarGacha() { document.getElementById('gachaModal').classList.add('hidden'); }
@@ -915,8 +1007,6 @@
             height = canvas.height = window.innerHeight;
         }
 
-        const devNames = DEVELOPER_NAMES; // スクリプト内で参照用
-
         function initStarfield() {
             resize();
             starsArr = Array.from({ length: 150 }, () => ({
@@ -932,7 +1022,7 @@
             ctx.clearRect(0, 0, width, height);
             starsArr.forEach(s => {
                 s.alpha += s.speed;
-                if (s.alpha > 1 || s.alpha < 0.1) s.speed = -s.speed;
+                if (s.alpha > 1 || s.alpha.toFixed(1) < 0.1) s.speed = -s.speed;
                 ctx.beginPath();
                 ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
                 ctx.fillStyle = `rgba(226, 232, 240, ${s.alpha * 0.75})`;
