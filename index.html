@@ -373,13 +373,14 @@
             return NG_WORDS.some(word => lower.includes(word));
         }
 
-        // 👑 創設者専用の固有ID
+        // 👑 創設者専用の固有ID（このIDを持つユーザーは強制的に公式マークになります）
         const CREATOR_ID = "ooyosinobori1";
 
-        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v9')) || [];
-        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users_v9')) || [];
-        let currentUser = JSON.parse(localStorage.getItem('cau_current_user_v9')) || { name: '', id: '' };
+        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v10')) || [];
+        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users_v10')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('cau_current_user_v10')) || { name: '', id: '' };
 
+        // ⚡ 【絶対防御】IDが "ooyosinobori1" なら、誰が何と言おうと強制的にメイン開発者（公式）と判定する！
         function isMainDeveloper(userId) {
             return userId && userId.toLowerCase() === CREATOR_ID.toLowerCase();
         }
@@ -419,17 +420,17 @@
             { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
         ];
 
-        let stars = JSON.parse(localStorage.getItem('cau_stars_v15')) || defaultStars;
-        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v15')) || [];
-        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v15')) || [];
+        let stars = JSON.parse(localStorage.getItem('cau_stars_v16')) || defaultStars;
+        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v16')) || [];
+        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v16')) || [];
 
         function saveStars() {
-            localStorage.setItem('cau_stars_v15', JSON.stringify(stars));
-            localStorage.setItem('cau_user_claps_v15', JSON.stringify(userClaps));
-            localStorage.setItem('cau_feedbacks_v15', JSON.stringify(feedbacks));
-            localStorage.setItem('cau_current_user_v9', JSON.stringify(currentUser));
-            localStorage.setItem('cau_semi_officials_v9', JSON.stringify(semiOfficialUsers));
-            localStorage.setItem('cau_following_users_v9', JSON.stringify(followingUsers));
+            localStorage.setItem('cau_stars_v16', JSON.stringify(stars));
+            localStorage.setItem('cau_user_claps_v16', JSON.stringify(userClaps));
+            localStorage.setItem('cau_feedbacks_v16', JSON.stringify(feedbacks));
+            localStorage.setItem('cau_current_user_v10', JSON.stringify(currentUser));
+            localStorage.setItem('cau_semi_officials_v10', JSON.stringify(semiOfficialUsers));
+            localStorage.setItem('cau_following_users_v10', JSON.stringify(followingUsers));
         }
 
         let currentLang = 'ja';
@@ -568,8 +569,6 @@
                 return;
             }
 
-            // 👑 ooyosinobori1 は、君自身の端末（または君がこのIDを入力する端末）では完全ノーチェックで使えるようにする！
-            // もし他の人が別の端末で同じようにooyosinobori1を使いたい場合のみ弾く仕様にするため、ここではシンプルに通します。
             errorMsg.classList.add('hidden');
             
             currentUser = { name: nameInput, id: idInput };
@@ -723,6 +722,8 @@
                 const oId = star.ownerId || "unknown";
 
                 let ownerDisplay = `<span class="text-cyan-400">${oName} <span class="text-[10px] text-slate-400">(@${oId})</span></span>`;
+                
+                // ⚡ ここでも同じ判定なので、誰が作った天体であっても ooyosinobori1 なら自動で公式マークが光ります！
                 if (isMainDeveloper(oId)) {
                     ownerDisplay = `<span class="text-amber-400 font-bold flex items-center space-x-1"><span>${oName}</span><span class="text-[10px] text-slate-400">(@${oId})</span><span class="bg-amber-500/20 border border-amber-400/50 text-amber-300 px-1.5 py-0.2 rounded text-[9px]">⚡ OFFICIAL</span></span>`;
                 } else if (isSemiOfficial(oId)) {
