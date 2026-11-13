@@ -79,10 +79,11 @@
             </div>
             
             <div class="flex items-center space-x-3">
-                <button onclick="openNameModal()" class="flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-cosmos-900 border border-cyan-500/30 text-xs font-mono text-cyan-300">
+                <!-- プロフィールボタン（一度設定したらクリックしても変更できないようにするか、情報表示用にする） -->
+                <div class="flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-cosmos-900 border border-cyan-500/30 text-xs font-mono text-cyan-300">
                     <span>👤</span>
                     <span id="currentUserNameDisplay">未設定</span>
-                </button>
+                </div>
 
                 <!-- 創設者専用の称号管理ボタン -->
                 <button id="adminPanelBtn" onclick="openAdminModal()" class="hidden px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-400/50 text-amber-300 text-xs font-mono transition-all">
@@ -190,15 +191,15 @@
         </div>
     </main>
 
-    <!-- 👤 強制プロフィール（名前とID）設定モーダル -->
+    <!-- 👤 【ロック機能付き】プロフィール設定モーダル -->
     <div id="nameModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-lg hidden">
         <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-cyan-500/50 shadow-2xl text-center relative">
             <div class="inline-block px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[11px] font-mono mb-3">
-                🚀 初期設定のお願い（必須）
+                🚀 初期設定のお願い（一度設定すると変更できません）
             </div>
             <h3 class="font-serif text-2xl font-bold text-white mb-2" id="name-modal-title">あなたのプロフィールを設定しよう</h3>
             <p class="text-xs text-slate-300 mb-5 leading-relaxed" id="name-modal-desc">
-                表示名と固有IDを入力してスタートしてね！
+                一度登録した名前とIDはこの端末でロックされ、後から変更できなくなります。慎重に入力してね！
             </p>
             <form onsubmit="handleNameSubmit(event)" class="space-y-4 text-left">
                 <div>
@@ -211,7 +212,7 @@
                 </div>
                 <p id="nameErrorMsg" class="text-xs text-red-400 mt-2 hidden">⚠️ エラーメッセージ</p>
                 <button type="submit" id="name-submit-btn" class="w-full py-3.5 mt-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-cosmos-950 font-bold text-sm shadow-lg transition-all text-center">
-                    設定して宇宙図鑑を始める ✨
+                    ロックして宇宙図鑑を始める 🔒✨
                 </button>
             </form>
         </div>
@@ -377,11 +378,10 @@
         const CREATOR_ID = "ooyosinobori1";
         const CREATOR_NAME = "ooyosinobori";
 
-        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v12')) || [];
-        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users_v12')) || [];
-        let currentUser = JSON.parse(localStorage.getItem('cau_current_user_v12')) || { name: '', id: '' };
+        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v13')) || [];
+        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users_v13')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('cau_current_user_v13')) || { name: '', id: '' };
 
-        // ⚡ IDが "ooyosinobori1" かつ 名前が "ooyosinobori" の場合だけ公式にする
         function isMainDeveloper(userId, userName) {
             return userId && userId.toLowerCase() === CREATOR_ID && userName && userName.toLowerCase() === CREATOR_NAME;
         }
@@ -421,17 +421,17 @@
             { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
         ];
 
-        let stars = JSON.parse(localStorage.getItem('cau_stars_v18')) || defaultStars;
-        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v18')) || [];
-        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v18')) || [];
+        let stars = JSON.parse(localStorage.getItem('cau_stars_v19')) || defaultStars;
+        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v19')) || [];
+        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v19')) || [];
 
         function saveStars() {
-            localStorage.setItem('cau_stars_v18', JSON.stringify(stars));
-            localStorage.setItem('cau_user_claps_v18', JSON.stringify(userClaps));
-            localStorage.setItem('cau_feedbacks_v18', JSON.stringify(feedbacks));
-            localStorage.setItem('cau_current_user_v12', JSON.stringify(currentUser));
-            localStorage.setItem('cau_semi_officials_v12', JSON.stringify(semiOfficialUsers));
-            localStorage.setItem('cau_following_users_v12', JSON.stringify(followingUsers));
+            localStorage.setItem('cau_stars_v19', JSON.stringify(stars));
+            localStorage.setItem('cau_user_claps_v19', JSON.stringify(userClaps));
+            localStorage.setItem('cau_feedbacks_v19', JSON.stringify(feedbacks));
+            localStorage.setItem('cau_current_user_v13', JSON.stringify(currentUser));
+            localStorage.setItem('cau_semi_officials_v13', JSON.stringify(semiOfficialUsers));
+            localStorage.setItem('cau_following_users_v13', JSON.stringify(followingUsers));
         }
 
         let currentLang = 'ja';
@@ -521,6 +521,7 @@
         }
 
         function checkUsername() {
+            // 🔒 すでに名前とIDが設定されている場合は、二度と設定モーダルを出さない（ロック）
             if (!currentUser.id || !currentUser.name) {
                 openNameModal();
             } else {
@@ -551,6 +552,10 @@
         }
 
         function openNameModal() {
+            // すでに設定済みの場合はモーダルを開かせない（ロック）
+            if (currentUser.id && currentUser.name) {
+                return;
+            }
             document.getElementById('inputDisplayName').value = currentUser.name || '';
             document.getElementById('inputUserId').value = currentUser.id || '';
             document.getElementById('nameErrorMsg').classList.add('hidden');
@@ -559,6 +564,9 @@
 
         function handleNameSubmit(e) {
             e.preventDefault();
+            // すでに設定されている場合は上書きさせない
+            if (currentUser.id && currentUser.name) return;
+
             const nameInput = document.getElementById('inputDisplayName').value.trim();
             const idInput = document.getElementById('inputUserId').value.trim().toLowerCase();
             const errorMsg = document.getElementById('nameErrorMsg');
