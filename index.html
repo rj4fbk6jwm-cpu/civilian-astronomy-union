@@ -133,7 +133,7 @@
                 <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑（創設者自動公式システム）</span>
             </div>
             <h1 id="hero-title" class="font-serif text-4xl sm:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-r from-white via-slate-200 to-cyan-200 bg-clip-text text-transparent">
-                宇宙の天体に、お気に入りの名前を残しよう
+                宇宙の天体に、お気に入りの名前を残そう
             </h1>
             <p id="hero-desc" class="text-slate-300 text-base sm:text-lg leading-relaxed">
                 最初にooyosinoboriと設定したあなたに公式マーク！デバイスに保存され消えません。
@@ -404,7 +404,7 @@
         const i18n = {
             ja: {
                 status: "みんなで作るオープンな宇宙・星空図鑑",
-                title: "宇宙の天体に、お気に入りの名前を残しよう",
+                title: "宇宙の天体に、お気に入りの名前を残そう",
                 desc: "最初にooyosinoboriと設定したあなたに公式マーク！デバイスに保存され消えません。",
                 searchKeyword: "天体名やキーワードで検索...",
                 registerBtn: "天体を登録する",
@@ -486,7 +486,6 @@
 
         function checkUsername() {
             if (!currentUserName) {
-                // 初回は自動で「ooyosinobori」をセットしてあげる安心設計
                 currentUserName = "ooyosinobori";
                 saveStars();
             }
@@ -784,7 +783,7 @@
             const notesInput = document.getElementById('inputNotes').value;
             const nameInput = document.getElementById('inputName').value;
 
-            if (containsNGWord(notesInput) || containsNGWord(nameItem = nameInput)) {
+            if (containsNGWord(notesInput) || containsNGWord(nameInput)) {
                 alert("⚠️ 不適切な言葉が含まれているため登録できません。");
                 return;
             }
