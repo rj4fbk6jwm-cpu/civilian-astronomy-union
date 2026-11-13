@@ -130,13 +130,13 @@
         <div class="text-center max-w-3xl mx-auto mb-12">
             <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-4">
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑（一意ID保護システム）</span>
+                <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑（完全一意ID制御）</span>
             </div>
             <h1 id="hero-title" class="font-serif text-4xl sm:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-r from-white via-slate-200 to-cyan-200 bg-clip-text text-transparent">
                 宇宙の天体に、お気に入りの名前を残しよう
             </h1>
             <p id="hero-desc" class="text-slate-300 text-base sm:text-lg leading-relaxed">
-                重複しない固有IDで安全に区別！好きな名前で天体を登録したり、気になる観測者をフォローしよう。
+                世界に一つだけの固有IDで安全に区別！好きな名前で天体を登録したり、気になる観測者をフォローしよう。
             </p>
         </div>
 
@@ -377,11 +377,13 @@
         // 👑 創設者専用の固有ID
         const CREATOR_ID = "ooyosinobori1";
 
-        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v6')) || [];
-        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users_v6')) || [];
-        let registeredUsers = JSON.parse(localStorage.getItem('cau_registered_users_v6')) || { "ooyosinobori1": "ooyosinobori" };
+        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v7')) || [];
+        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users_v7')) || [];
+        
+        // 🌐 全ユーザーのID重複防止用リスト（存在しない場合は初期化）
+        let registeredUsers = JSON.parse(localStorage.getItem('cau_registered_users_v7')) || { "ooyosinobori1": "ooyosinobori" };
 
-        let currentUser = JSON.parse(localStorage.getItem('cau_current_user_v6')) || { name: '', id: '' };
+        let currentUser = JSON.parse(localStorage.getItem('cau_current_user_v7')) || { name: '', id: '' };
 
         function isMainDeveloper(userId) {
             return userId && userId.toLowerCase() === CREATOR_ID.toLowerCase();
@@ -422,18 +424,18 @@
             { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
         ];
 
-        let stars = JSON.parse(localStorage.getItem('cau_stars_v12')) || defaultStars;
-        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v12')) || [];
-        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v12')) || [];
+        let stars = JSON.parse(localStorage.getItem('cau_stars_v13')) || defaultStars;
+        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v13')) || [];
+        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v13')) || [];
 
         function saveStars() {
-            localStorage.setItem('cau_stars_v12', JSON.stringify(stars));
-            localStorage.setItem('cau_user_claps_v12', JSON.stringify(userClaps));
-            localStorage.setItem('cau_feedbacks_v12', JSON.stringify(feedbacks));
-            localStorage.setItem('cau_current_user_v6', JSON.stringify(currentUser));
-            localStorage.setItem('cau_semi_officials_v6', JSON.stringify(semiOfficialUsers));
-            localStorage.setItem('cau_following_users_v6', JSON.stringify(followingUsers));
-            localStorage.setItem('cau_registered_users_v6', JSON.stringify(registeredUsers));
+            localStorage.setItem('cau_stars_v13', JSON.stringify(stars));
+            localStorage.setItem('cau_user_claps_v13', JSON.stringify(userClaps));
+            localStorage.setItem('cau_feedbacks_v13', JSON.stringify(feedbacks));
+            localStorage.setItem('cau_current_user_v7', JSON.stringify(currentUser));
+            localStorage.setItem('cau_semi_officials_v7', JSON.stringify(semiOfficialUsers));
+            localStorage.setItem('cau_following_users_v7', JSON.stringify(followingUsers));
+            localStorage.setItem('cau_registered_users_v7', JSON.stringify(registeredUsers));
         }
 
         let currentLang = 'ja';
@@ -443,7 +445,7 @@
             ja: {
                 status: "みんなで作るオープンな宇宙・星空図鑑",
                 title: "宇宙の天体に、お気に入りの名前を残しよう",
-                desc: "重複しない固有IDで安全に区別！好きな名前で天体を登録したり、気になる観測者をフォローしよう。",
+                desc: "世界に一つだけの固有IDで安全に区別！好きな名前で天体を登録したり、気になる観測者をフォローしよう。",
                 searchKeyword: "天体名やキーワードで検索...",
                 registerBtn: "天体を登録する",
                 gachaBtn: "今日の宇宙ガチャ",
@@ -523,6 +525,14 @@
         }
 
         function checkUsername() {
+            // すでに登録されている全ユーザーIDのリストを再構築（他の人のIDが勝手に消えないようにする）
+            registeredUsers = { "ooyosinobori1": "ooyosinobori" };
+            stars.forEach(s => {
+                if (s.ownerId && s.ownerName) {
+                    registeredUsers[s.ownerId.toLowerCase()] = s.ownerName;
+                }
+            });
+
             if (!currentUser.id || !currentUser.name) {
                 openNameModal();
             } else {
@@ -576,9 +586,11 @@
                 return;
             }
 
-            // 👑 ooyosinobori1 は創設者専用IDとして特別に許可する（サンプル天体のオーナーIDと重複扱いにしない）
+            // 🛑 厳密な重複チェック：
+            // 1. ooyosinobori1 は創設者専用として特別許可
+            // 2. それ以外のIDで、すでに registeredUsers に存在していて、かつ「自分自身が現在使っているIDではない場合」はエラーにする
             if (idInput === CREATOR_ID) {
-                // OK！そのまま通す
+                // OK
             } else if (registeredUsers[idInput] && currentUser.id !== idInput) {
                 errorMsg.innerText = `⚠️ ID「@${idInput}」はすでに他のユーザーに使用されています。別のIDを指定してください。`;
                 errorMsg.classList.remove('hidden');
@@ -587,10 +599,6 @@
 
             errorMsg.classList.add('hidden');
             
-            if (currentUser.id && currentUser.id !== idInput && currentUser.id !== CREATOR_ID) {
-                delete registeredUsers[currentUser.id];
-            }
-
             currentUser = { name: nameInput, id: idInput };
             if (idInput !== CREATOR_ID) {
                 registeredUsers[idInput] = nameInput;
@@ -906,6 +914,10 @@
             };
             stars.unshift(newStar);
             userClaps.push(newStar.id);
+
+            // 新しく天体を登録した人のIDも重複禁止リストに登録
+            registeredUsers[currentUser.id.toLowerCase()] = currentUser.name;
+
             saveStars();
             closeRegisterModal();
             document.getElementById('starForm').reset();
