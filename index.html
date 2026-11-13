@@ -12,6 +12,30 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@300;400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     
+    <!-- Firebase SDK (Modular v10) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Firebase 接続設定
+        const firebaseConfig = {
+            apiKey: "AIzaSyC9LGF70kGhx8-90Je4Xue2hODbh-b6qfs",
+            authDomain: "cau-astronomy-union.firebaseapp.com",
+            projectId: "cau-astronomy-union",
+            storageBucket: "cau-astronomy-union.firebasestorage.app",
+            messagingSenderId: "516973731457",
+            appId: "1:516973731457:web:2f637b402740ea32dbb780",
+            measurementId: "G-HLPSMB1033"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.firebaseCols = { collection, doc, setDoc, getDoc, getDocs, onSnapshot };
+        window.initFirebaseApp();
+    </script>
+
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -79,13 +103,11 @@
             </div>
             
             <div class="flex items-center space-x-3">
-                <!-- プロフィールボタン（一度設定したらクリックしても変更できないようにするか、情報表示用にする） -->
                 <div class="flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-cosmos-900 border border-cyan-500/30 text-xs font-mono text-cyan-300">
                     <span>👤</span>
                     <span id="currentUserNameDisplay">未設定</span>
                 </div>
 
-                <!-- 創設者専用の称号管理ボタン -->
                 <button id="adminPanelBtn" onclick="openAdminModal()" class="hidden px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-400/50 text-amber-300 text-xs font-mono transition-all">
                     👑 称号管理
                 </button>
@@ -131,7 +153,7 @@
         <div class="text-center max-w-3xl mx-auto mb-12">
             <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-4">
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑</span>
+                <span id="registry-status">ID重複防止・クラウドリアルタイム同期中 (Firebase)</span>
             </div>
             <h1 id="hero-title" class="font-serif text-4xl sm:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-r from-white via-slate-200 to-cyan-200 bg-clip-text text-transparent">
                 宇宙の天体に、お気に入りの名前を残しよう
@@ -159,7 +181,7 @@
                     </select>
 
                     <span id="stats-counter" class="text-xs font-mono text-cyan-400 px-3 py-2 rounded-xl bg-cyan-950/40 border border-cyan-500/20 whitespace-nowrap">
-                        登録天体: 6件
+                        登録天体: 0件
                     </span>
                     <button onclick="openRegisterModal()" class="px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-cosmos-950 font-bold text-sm tracking-wide shadow-lg shadow-cyan-500/20 transition-all duration-200 whitespace-nowrap flex items-center space-x-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -191,15 +213,15 @@
         </div>
     </main>
 
-    <!-- 👤 【ロック機能付き】プロフィール設定モーダル -->
+    <!-- 👤 【ID重複チェック＆ロック付き】プロフィール設定モーダル -->
     <div id="nameModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-lg hidden">
         <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-cyan-500/50 shadow-2xl text-center relative">
             <div class="inline-block px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[11px] font-mono mb-3">
-                🚀 初期設定のお願い（一度設定すると変更できません）
+                🚀 初期設定のお願い（IDは重複できません）
             </div>
             <h3 class="font-serif text-2xl font-bold text-white mb-2" id="name-modal-title">あなたのプロフィールを設定しよう</h3>
             <p class="text-xs text-slate-300 mb-5 leading-relaxed" id="name-modal-desc">
-                一度登録した名前とIDはこの端末でロックされ、後から変更できなくなります。慎重に入力してね！
+                他の人がすでに使っているIDは登録できません。一度登録するとこの端末でロックされます！
             </p>
             <form onsubmit="handleNameSubmit(event)" class="space-y-4 text-left">
                 <div>
@@ -212,13 +234,13 @@
                 </div>
                 <p id="nameErrorMsg" class="text-xs text-red-400 mt-2 hidden">⚠️ エラーメッセージ</p>
                 <button type="submit" id="name-submit-btn" class="w-full py-3.5 mt-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-cosmos-950 font-bold text-sm shadow-lg transition-all text-center">
-                    ロックして宇宙図鑑を始める 🔒✨
+                    IDを登録して宇宙図鑑を始める 🔒✨
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- 👑 称号管理（準公式マーク授与）モーダル (創設者専用) -->
+    <!-- 👑 称号管理モーダル (創設者専用) -->
     <div id="adminModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
         <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-amber-500/40 shadow-2xl relative">
             <div class="flex items-center justify-between mb-4">
@@ -314,7 +336,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-            <p id="feedback-desc" class="text-xs text-slate-300 mb-4">サイトの感想、改善してほしい点、新しい機能のアイデアなどを自由に送ってください！</p>
+            <p id="feedback-desc" class="text-xs text-slate-300 mb-4">サイトの感想、改善点、アイデアを教えてください！</p>
             <form onsubmit="handleFeedbackSubmit(event)" class="space-y-4">
                 <div>
                     <textarea id="feedbackMessage" rows="4" required placeholder="メッセージ内容..." class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none resize-none"></textarea>
@@ -365,7 +387,7 @@
         </div>
     </footer>
 
-    <!-- JavaScript Application Logic -->
+    <!-- Application Logic & Firebase Integration with ID Duplication Check -->
     <script>
         const NG_WORDS = ["あほ", "バカ", "ばか", "死ね", "しね", "殺す", "ころす", "unko", "manko", "kintama", "idiot", "stupid", "fuck", "shit", "bitch"];
 
@@ -374,13 +396,16 @@
             return NG_WORDS.some(word => lower.includes(word));
         }
 
-        // 👑 創設者専用の固有IDと名前（両方が一致したときだけ公式マークがつきます）
         const CREATOR_ID = "ooyosinobori1";
         const CREATOR_NAME = "ooyosinobori";
 
-        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v13')) || [];
-        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users_v13')) || [];
-        let currentUser = JSON.parse(localStorage.getItem('cau_current_user_v13')) || { name: '', id: '' };
+        let currentUser = JSON.parse(localStorage.getItem('cau_current_user_v15')) || { name: '', id: '' };
+        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v15')) || [];
+        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users_v15')) || [];
+        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v15')) || [];
+
+        let stars = [];
+        let feedbacks = [];
 
         function isMainDeveloper(userId, userName) {
             return userId && userId.toLowerCase() === CREATOR_ID && userName && userName.toLowerCase() === CREATOR_NAME;
@@ -394,44 +419,59 @@
             return followingUsers.includes(userId);
         }
 
-        function toggleFollow(userId) {
-            if (!currentUser.id) {
-                openNameModal();
-                return;
-            }
-            if (userId === currentUser.id) {
-                alert("自分自身をフォローすることはできません！");
-                return;
-            }
-            if (isFollowing(userId)) {
-                followingUsers = followingUsers.filter(u => u !== userId);
-            } else {
-                followingUsers.push(userId);
-            }
-            saveStars();
-            filterStars();
+        window.initFirebaseApp = function() {
+            const db = window.db;
+            const { collection, onSnapshot, doc, setDoc } = window.firebaseCols;
+
+            const defaultStars = [
+                { id: "CAU-001", name: "Aethelgard", type: "star", imgUrl: "", ra: "03h 47m", dec: "+24° 15′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-01-15", notes: "創設者ooyosinobori1が管理する公式認定のオレンジ色の恒星。", claps: 42, comments: ["⚡ 公式データです"] },
+                { id: "CAU-002", name: "Vesper-9", type: "planet", imgUrl: "", ra: "18h 36m", dec: "-13° 49′", ownerName: "Lyra Collective", ownerId: "lyra99", date: "2026-02-02", notes: "青く輝く美しいガス惑星。", claps: 25, comments: ["リングが綺麗そう！"] },
+                { id: "CAU-003", name: "Kaelum Prime", type: "star", imgUrl: "", ra: "22h 11m", dec: "+45° 12′", ownerName: "Astra Guild", ownerId: "astra_g", date: "2026-02-18", notes: "冬の夜空でひときわ輝いていた美しい星。", claps: 19, comments: [] },
+                { id: "CAU-004", name: "Solaria Minor", type: "nebula", imgUrl: "", ra: "06h 45m", dec: "-16° 42′", ownerName: "Sirius Independent", ownerId: "sirius_i", date: "2026-03-10", notes: "色鮮やかなガスが広がる美しい星雲。", claps: 30, comments: ["写真映えしそう！"] },
+                { id: "CAU-005", name: "Zephyria", type: "star", imgUrl: "", ra: "12h 21m", dec: "+57° 01′", ownerName: "Borealis Group", ownerId: "borealis", date: "2026-04-05", notes: "静かな夜の観測中に偶然見つけたお気に入り。", claps: 14, comments: [] },
+                { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
+            ];
+
+            onSnapshot(collection(db, "stars"), (snapshot) => {
+                if (snapshot.empty) {
+                    defaultStars.forEach(async (star) => {
+                        await setDoc(doc(db, "stars", star.id), star);
+                    });
+                } else {
+                    stars = [];
+                    snapshot.forEach((doc) => {
+                        stars.push(doc.data());
+                    });
+                    filterStars();
+                }
+            });
+
+            onSnapshot(collection(db, "feedbacks"), (snapshot) => {
+                feedbacks = [];
+                snapshot.forEach((doc) => {
+                    feedbacks.push(doc.data());
+                });
+            });
+        };
+
+        async function saveStarToCloud(star) {
+            const db = window.db;
+            const { doc, setDoc } = window.firebaseCols;
+            await setDoc(doc(db, "stars", star.id), star);
         }
 
-        const defaultStars = [
-            { id: "CAU-001", name: "Aethelgard", type: "star", imgUrl: "", ra: "03h 47m", dec: "+24° 15′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-01-15", notes: "創設者ooyosinobori1が管理する公式認定のオレンジ色の恒星。", claps: 42, comments: ["⚡ 公式データです"] },
-            { id: "CAU-002", name: "Vesper-9", type: "planet", imgUrl: "", ra: "18h 36m", dec: "-13° 49′", ownerName: "Lyra Collective", ownerId: "lyra99", date: "2026-02-02", notes: "青く輝く美しいガス惑星。", claps: 25, comments: ["リングが綺麗そう！"] },
-            { id: "CAU-003", name: "Kaelum Prime", type: "star", imgUrl: "", ra: "22h 11m", dec: "+45° 12′", ownerName: "Astra Guild", ownerId: "astra_g", date: "2026-02-18", notes: "冬の夜空でひときわ輝いていた美しい星。", claps: 19, comments: [] },
-            { id: "CAU-004", name: "Solaria Minor", type: "nebula", imgUrl: "", ra: "06h 45m", dec: "-16° 42′", ownerName: "Sirius Independent", ownerId: "sirius_i", date: "2026-03-10", notes: "色鮮やかなガスが広がる美しい星雲。", claps: 30, comments: ["写真映えしそう！"] },
-            { id: "CAU-005", name: "Zephyria", type: "star", imgUrl: "", ra: "12h 21m", dec: "+57° 01′", ownerName: "Borealis Group", ownerId: "borealis", date: "2026-04-05", notes: "静かな夜の観測中に偶然見つけたお気に入り。", claps: 14, comments: [] },
-            { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
-        ];
+        async function saveFeedbackToCloud(fb) {
+            const db = window.db;
+            const { doc, setDoc } = window.firebaseCols;
+            const fbId = "fb_" + Date.now();
+            await setDoc(doc(db, "feedbacks", fbId), fb);
+        }
 
-        let stars = JSON.parse(localStorage.getItem('cau_stars_v19')) || defaultStars;
-        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v19')) || [];
-        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v19')) || [];
-
-        function saveStars() {
-            localStorage.setItem('cau_stars_v19', JSON.stringify(stars));
-            localStorage.setItem('cau_user_claps_v19', JSON.stringify(userClaps));
-            localStorage.setItem('cau_feedbacks_v19', JSON.stringify(feedbacks));
-            localStorage.setItem('cau_current_user_v13', JSON.stringify(currentUser));
-            localStorage.setItem('cau_semi_officials_v13', JSON.stringify(semiOfficialUsers));
-            localStorage.setItem('cau_following_users_v13', JSON.stringify(followingUsers));
+        function saveLocalState() {
+            localStorage.setItem('cau_current_user_v15', JSON.stringify(currentUser));
+            localStorage.setItem('cau_semi_officials_v15', JSON.stringify(semiOfficialUsers));
+            localStorage.setItem('cau_following_users_v15', JSON.stringify(followingUsers));
+            localStorage.setItem('cau_user_claps_v15', JSON.stringify(userClaps));
         }
 
         let currentLang = 'ja';
@@ -439,7 +479,7 @@
 
         const i18n = {
             ja: {
-                status: "みんなで作るオープンな宇宙・星空図鑑",
+                status: "ID重複防止・クラウドリアルタイム同期中 (Firebase)",
                 title: "宇宙の天体に、お気に入りの名前を残しよう",
                 desc: "好きな名前で天体を登録したり、気になる観測者をフォローしよう。",
                 searchKeyword: "天体名やキーワードで検索...",
@@ -521,7 +561,6 @@
         }
 
         function checkUsername() {
-            // 🔒 すでに名前とIDが設定されている場合は、二度と設定モーダルを出さない（ロック）
             if (!currentUser.id || !currentUser.name) {
                 openNameModal();
             } else {
@@ -552,19 +591,16 @@
         }
 
         function openNameModal() {
-            // すでに設定済みの場合はモーダルを開かせない（ロック）
-            if (currentUser.id && currentUser.name) {
-                return;
-            }
+            if (currentUser.id && currentUser.name) return;
             document.getElementById('inputDisplayName').value = currentUser.name || '';
             document.getElementById('inputUserId').value = currentUser.id || '';
             document.getElementById('nameErrorMsg').classList.add('hidden');
             document.getElementById('nameModal').classList.remove('hidden');
         }
 
-        function handleNameSubmit(e) {
+        // 🔒 クラウド上でIDがすでに使われていないかチェックして登録する関数
+        async function handleNameSubmit(e) {
             e.preventDefault();
-            // すでに設定されている場合は上書きさせない
             if (currentUser.id && currentUser.name) return;
 
             const nameInput = document.getElementById('inputDisplayName').value.trim();
@@ -578,14 +614,40 @@
                 return;
             }
 
-            errorMsg.classList.add('hidden');
-            
-            currentUser = { name: nameInput, id: idInput };
+            // 特例：創設者IDの場合は無条件で許可
+            if (idInput === CREATOR_ID && nameInput !== CREATOR_NAME) {
+                errorMsg.innerText = "⚠️ このID（@ooyosinobori1）は創設者専用のため使用できません。";
+                errorMsg.classList.remove('hidden');
+                return;
+            }
 
-            saveStars();
-            updateUserDisplay();
-            document.getElementById('nameModal').classList.add('hidden');
-            filterStars();
+            try {
+                // Firestoreの 'users' コレクションからIDがすでに使われていないか確認
+                const db = window.db;
+                const { doc, getDoc, setDoc } = window.firebaseCols;
+                const userDocRef = doc(db, "users", idInput);
+                const userSnap = await getDoc(userDocRef);
+
+                if (userSnap.exists() && idInput !== CREATOR_ID) {
+                    errorMsg.innerText = "⚠️ このIDはすでに他のユーザーに使用されています。別のIDを指定してください。";
+                    errorMsg.classList.remove('hidden');
+                    return;
+                }
+
+                // まだ使われていなければクラウドにユーザー情報を登録（予約）
+                await setDoc(userDocRef, { name: nameInput, id: idInput, createdAt: new Date().toISOString() });
+
+                errorMsg.classList.add('hidden');
+                currentUser = { name: nameInput, id: idInput };
+                saveLocalState();
+                updateUserDisplay();
+                document.getElementById('nameModal').classList.add('hidden');
+                filterStars();
+            } catch (err) {
+                console.error(err);
+                errorMsg.innerText = "⚠️ ネットワークエラーが発生しました。もう一度お試しください。";
+                errorMsg.classList.remove('hidden');
+            }
         }
 
         function openAdminModal() {
@@ -601,7 +663,7 @@
             const targetId = document.getElementById('targetSemiUser').value.trim().toLowerCase();
             if (targetId && !semiOfficialUsers.includes(targetId)) {
                 semiOfficialUsers.push(targetId);
-                saveStars();
+                saveLocalState();
                 document.getElementById('targetSemiUser').value = '';
                 updateSemiOfficialList();
                 filterStars();
@@ -620,7 +682,7 @@
 
         function removeSemiOfficial(id) {
             semiOfficialUsers = semiOfficialUsers.filter(u => u !== id);
-            saveStars();
+            saveLocalState();
             updateSemiOfficialList();
             filterStars();
         }
@@ -638,7 +700,8 @@
             if (target) {
                 target.claps = (target.claps || 0) + 1;
                 userClaps.push(id);
-                saveStars();
+                saveLocalState();
+                saveStarToCloud(target);
                 filterStars();
             }
         }
@@ -666,7 +729,7 @@
                     else if (isSemiOfficial(currentUser.id)) badge = " ⭐";
 
                     target.comments.push(`${currentUser.name} (@${currentUser.id})${badge}: ${commentText}`);
-                    saveStars();
+                    saveStarToCloud(target);
                     input.value = '';
                     filterStars();
                 }
@@ -676,7 +739,6 @@
         function deleteStar(id) {
             if (confirm("この天体を削除しますか？")) {
                 stars = stars.filter(s => s.id !== id);
-                saveStars();
                 filterStars();
             }
         }
@@ -855,8 +917,8 @@
                 alert("⚠️ 不適切な言葉が含まれているため送信できません。");
                 return;
             }
-            feedbacks.push({ name: currentUser.name || '未設定', msg, date: new Date().toISOString() });
-            saveStars();
+            const fb = { name: currentUser.name || '未設定', msg, date: new Date().toISOString() };
+            saveFeedbackToCloud(fb);
             closeFeedbackModal();
             document.getElementById('feedbackMessage').value = '';
             alert("製作者へメッセージを送信しました！ありがとうございます！✨");
@@ -891,13 +953,13 @@
                 claps: 1,
                 comments: []
             };
-            stars.unshift(newStar);
+
+            saveStarToCloud(newStar);
             userClaps.push(newStar.id);
-            saveStars();
+            saveLocalState();
             closeRegisterModal();
             document.getElementById('starForm').reset();
-            filterStars();
-            document.getElementById('successModal').classList.add('hidden');
+            document.getElementById('successModal').classList.remove('hidden');
         }
 
         // Canvas Starfield Animation
@@ -942,7 +1004,6 @@
             checkUsername();
             const searchInput = document.getElementById('searchInput');
             if (searchInput) searchInput.value = '';
-            filterStars();
             draw();
         };
     </script>
