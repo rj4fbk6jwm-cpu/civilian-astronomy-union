@@ -130,13 +130,13 @@
         <div class="text-center max-w-3xl mx-auto mb-12">
             <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-4">
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑（完全一意ID制御）</span>
+                <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑</span>
             </div>
             <h1 id="hero-title" class="font-serif text-4xl sm:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-r from-white via-slate-200 to-cyan-200 bg-clip-text text-transparent">
                 宇宙の天体に、お気に入りの名前を残しよう
             </h1>
             <p id="hero-desc" class="text-slate-300 text-base sm:text-lg leading-relaxed">
-                世界に一つだけの固有IDで安全に区別！好きな名前で天体を登録したり、気になる観測者をフォローしよう。
+                好きな名前で天体を登録したり、気になる観測者をフォローしよう。
             </p>
         </div>
 
@@ -198,8 +198,7 @@
             </div>
             <h3 class="font-serif text-2xl font-bold text-white mb-2" id="name-modal-title">あなたのプロフィールを設定しよう</h3>
             <p class="text-xs text-slate-300 mb-5 leading-relaxed" id="name-modal-desc">
-                IDの重複を防ぐため、世界に一つだけの固有IDを設定してください！<br>
-                すでに使われているIDは登録できません。
+                表示名と固有IDを入力してスタートしてね！
             </p>
             <form onsubmit="handleNameSubmit(event)" class="space-y-4 text-left">
                 <div>
@@ -207,10 +206,10 @@
                     <input type="text" id="inputDisplayName" required placeholder="例: ooyosinobori" class="w-full px-4 py-2.5 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-mono text-cyan-400 mb-1">2. 固有ID（半角英数字・重複不可）</label>
+                    <label class="block text-xs font-mono text-cyan-400 mb-1">2. 固有ID（半角英数字）</label>
                     <input type="text" id="inputUserId" required pattern="[a-zA-Z0-9_]+" title="半角英数字とアンダーバー(_)のみ使用できます" placeholder="例: ooyosinobori1" class="w-full px-4 py-2.5 rounded-xl glass-input text-sm text-cyan-300 placeholder-slate-500 focus:outline-none font-mono">
                 </div>
-                <p id="nameErrorMsg" class="text-xs text-red-400 mt-2 hidden">⚠️ そのIDはすでに他の人によって使われているか、使用できない形式です。</p>
+                <p id="nameErrorMsg" class="text-xs text-red-400 mt-2 hidden">⚠️ そのIDは創設者専用のため、他の人は使用できません。</p>
                 <button type="submit" id="name-submit-btn" class="w-full py-3.5 mt-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-cosmos-950 font-bold text-sm shadow-lg transition-all text-center">
                     設定して宇宙図鑑を始める ✨
                 </button>
@@ -374,16 +373,15 @@
             return NG_WORDS.some(word => lower.includes(word));
         }
 
-        // 👑 創設者専用の固有ID
+        // 👑 創設者専用の固有ID（このIDはあなた以外使えないロックがかかります）
         const CREATOR_ID = "ooyosinobori1";
+        // 🔒 ここにあなたの「ブラウザの固有識別コード（または目印）」を設定しておけます。今回はシンプルに特定の表示名や端末判定にします
+        // ※ 本人が自分の端末かどうかを判定するため、この端末ではOK、他人の端末から「ooyosinobori1」を入れようとするとエラーになります。
+        const CREATOR_DEVICE_KEY = "cau_is_true_creator_v1";
 
-        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v7')) || [];
-        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users_v7')) || [];
-        
-        // 🌐 全ユーザーのID重複防止用リスト（存在しない場合は初期化）
-        let registeredUsers = JSON.parse(localStorage.getItem('cau_registered_users_v7')) || { "ooyosinobori1": "ooyosinobori" };
-
-        let currentUser = JSON.parse(localStorage.getItem('cau_current_user_v7')) || { name: '', id: '' };
+        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v8')) || [];
+        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users_v8')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('cau_current_user_v8')) || { name: '', id: '' };
 
         function isMainDeveloper(userId) {
             return userId && userId.toLowerCase() === CREATOR_ID.toLowerCase();
@@ -424,18 +422,17 @@
             { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
         ];
 
-        let stars = JSON.parse(localStorage.getItem('cau_stars_v13')) || defaultStars;
-        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v13')) || [];
-        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v13')) || [];
+        let stars = JSON.parse(localStorage.getItem('cau_stars_v14')) || defaultStars;
+        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v14')) || [];
+        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v14')) || [];
 
         function saveStars() {
-            localStorage.setItem('cau_stars_v13', JSON.stringify(stars));
-            localStorage.setItem('cau_user_claps_v13', JSON.stringify(userClaps));
-            localStorage.setItem('cau_feedbacks_v13', JSON.stringify(feedbacks));
-            localStorage.setItem('cau_current_user_v7', JSON.stringify(currentUser));
-            localStorage.setItem('cau_semi_officials_v7', JSON.stringify(semiOfficialUsers));
-            localStorage.setItem('cau_following_users_v7', JSON.stringify(followingUsers));
-            localStorage.setItem('cau_registered_users_v7', JSON.stringify(registeredUsers));
+            localStorage.setItem('cau_stars_v14', JSON.stringify(stars));
+            localStorage.setItem('cau_user_claps_v14', JSON.stringify(userClaps));
+            localStorage.setItem('cau_feedbacks_v14', JSON.stringify(feedbacks));
+            localStorage.setItem('cau_current_user_v8', JSON.stringify(currentUser));
+            localStorage.setItem('cau_semi_officials_v8', JSON.stringify(semiOfficialUsers));
+            localStorage.setItem('cau_following_users_v8', JSON.stringify(followingUsers));
         }
 
         let currentLang = 'ja';
@@ -445,7 +442,7 @@
             ja: {
                 status: "みんなで作るオープンな宇宙・星空図鑑",
                 title: "宇宙の天体に、お気に入りの名前を残しよう",
-                desc: "世界に一つだけの固有IDで安全に区別！好きな名前で天体を登録したり、気になる観測者をフォローしよう。",
+                desc: "好きな名前で天体を登録したり、気になる観測者をフォローしよう。",
                 searchKeyword: "天体名やキーワードで検索...",
                 registerBtn: "天体を登録する",
                 gachaBtn: "今日の宇宙ガチャ",
@@ -525,21 +522,9 @@
         }
 
         function checkUsername() {
-            // すでに登録されている全ユーザーIDのリストを再構築（他の人のIDが勝手に消えないようにする）
-            registeredUsers = { "ooyosinobori1": "ooyosinobori" };
-            stars.forEach(s => {
-                if (s.ownerId && s.ownerName) {
-                    registeredUsers[s.ownerId.toLowerCase()] = s.ownerName;
-                }
-            });
-
             if (!currentUser.id || !currentUser.name) {
                 openNameModal();
             } else {
-                if (currentUser.id.toLowerCase() !== CREATOR_ID) {
-                    registeredUsers[currentUser.id.toLowerCase()] = currentUser.name;
-                }
-                saveStars();
                 updateUserDisplay();
             }
         }
@@ -586,23 +571,25 @@
                 return;
             }
 
-            // 🛑 厳密な重複チェック：
-            // 1. ooyosinobori1 は創設者専用として特別許可
-            // 2. それ以外のIDで、すでに registeredUsers に存在していて、かつ「自分自身が現在使っているIDではない場合」はエラーにする
+            // 🛑 【超重要】もし「ooyosinobori1」が入力された場合、この端末があなたのもの（クリエーター端末フラグ）かチェックする
             if (idInput === CREATOR_ID) {
-                // OK
-            } else if (registeredUsers[idInput] && currentUser.id !== idInput) {
-                errorMsg.innerText = `⚠️ ID「@${idInput}」はすでに他のユーザーに使用されています。別のIDを指定してください。`;
-                errorMsg.classList.remove('hidden');
-                return;
+                const isMyDevice = localStorage.getItem(CREATOR_DEVICE_KEY);
+                if (!isMyDevice && currentUser.id !== CREATOR_ID) {
+                    // もしあなたの端末じゃなければ、エラーを出して弾く！
+                    errorMsg.innerText = "⚠️ 申し訳ありません。ID「@ooyosinobori1」は創設者専用のため使用できません。別のIDを指定してください。";
+                    errorMsg.classList.remove('hidden');
+                    return;
+                }
+            }
+
+            // 初めてこの端末で `ooyosinobori1` を登録したときは、この端末を「あなたの専用端末」として記憶する
+            if (idInput === CREATOR_ID) {
+                localStorage.setItem(CREATOR_DEVICE_KEY, "true");
             }
 
             errorMsg.classList.add('hidden');
             
             currentUser = { name: nameInput, id: idInput };
-            if (idInput !== CREATOR_ID) {
-                registeredUsers[idInput] = nameInput;
-            }
 
             saveStars();
             updateUserDisplay();
@@ -914,10 +901,6 @@
             };
             stars.unshift(newStar);
             userClaps.push(newStar.id);
-
-            // 新しく天体を登録した人のIDも重複禁止リストに登録
-            registeredUsers[currentUser.id.toLowerCase()] = currentUser.name;
-
             saveStars();
             closeRegisterModal();
             document.getElementById('starForm').reset();
