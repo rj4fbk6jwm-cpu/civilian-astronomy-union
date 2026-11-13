@@ -15,7 +15,7 @@
     <!-- Firebase SDK (Modular v10) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, setDoc, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // Firebase 接続設定
         const firebaseConfig = {
@@ -31,8 +31,9 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // グローバルに公開して他のスクリプトから使えるようにする
         window.db = db;
-        window.firebaseCols = { collection, doc, setDoc, getDoc, getDocs, onSnapshot };
+        window.firebaseCols = { collection, doc, setDoc, getDocs, onSnapshot };
         window.initFirebaseApp();
     </script>
 
@@ -153,7 +154,7 @@
         <div class="text-center max-w-3xl mx-auto mb-12">
             <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-4">
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                <span id="registry-status">ID重複防止・クラウドリアルタイム同期中 (Firebase)</span>
+                <span id="registry-status">クラウドリアルタイム同期中 (Firebase)</span>
             </div>
             <h1 id="hero-title" class="font-serif text-4xl sm:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-r from-white via-slate-200 to-cyan-200 bg-clip-text text-transparent">
                 宇宙の天体に、お気に入りの名前を残しよう
@@ -213,15 +214,15 @@
         </div>
     </main>
 
-    <!-- 👤 【ID重複チェック＆ロック付き】プロフィール設定モーダル -->
+    <!-- 👤 プロフィール設定モーダル（ロック機能付き） -->
     <div id="nameModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-lg hidden">
         <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-cyan-500/50 shadow-2xl text-center relative">
             <div class="inline-block px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[11px] font-mono mb-3">
-                🚀 初期設定のお願い（IDは重複できません）
+                🚀 初期設定のお願い（一度設定すると変更できません）
             </div>
             <h3 class="font-serif text-2xl font-bold text-white mb-2" id="name-modal-title">あなたのプロフィールを設定しよう</h3>
             <p class="text-xs text-slate-300 mb-5 leading-relaxed" id="name-modal-desc">
-                他の人がすでに使っているIDは登録できません。一度登録するとこの端末でロックされます！
+                一度登録した名前とIDはこの端末でロックされ、後から変更できなくなります。慎重に入力してね！
             </p>
             <form onsubmit="handleNameSubmit(event)" class="space-y-4 text-left">
                 <div>
@@ -234,7 +235,7 @@
                 </div>
                 <p id="nameErrorMsg" class="text-xs text-red-400 mt-2 hidden">⚠️ エラーメッセージ</p>
                 <button type="submit" id="name-submit-btn" class="w-full py-3.5 mt-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-cosmos-950 font-bold text-sm shadow-lg transition-all text-center">
-                    IDを登録して宇宙図鑑を始める 🔒✨
+                    ロックして宇宙図鑑を始める 🔒✨
                 </button>
             </form>
         </div>
@@ -387,7 +388,7 @@
         </div>
     </footer>
 
-    <!-- Application Logic & Firebase Integration with ID Duplication Check -->
+    <!-- Application Logic & Firebase Integration -->
     <script>
         const NG_WORDS = ["あほ", "バカ", "ばか", "死ね", "しね", "殺す", "ころす", "unko", "manko", "kintama", "idiot", "stupid", "fuck", "shit", "bitch"];
 
@@ -399,10 +400,10 @@
         const CREATOR_ID = "ooyosinobori1";
         const CREATOR_NAME = "ooyosinobori";
 
-        let currentUser = JSON.parse(localStorage.getItem('cau_current_user_v15')) || { name: '', id: '' };
-        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v15')) || [];
-        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users_v15')) || [];
-        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v15')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('cau_current_user_v14')) || { name: '', id: '' };
+        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v14')) || [];
+        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users_v14')) || [];
+        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v14')) || [];
 
         let stars = [];
         let feedbacks = [];
@@ -419,10 +420,12 @@
             return followingUsers.includes(userId);
         }
 
+        // Firebaseリアルタイム同期の初期化
         window.initFirebaseApp = function() {
             const db = window.db;
             const { collection, onSnapshot, doc, setDoc } = window.firebaseCols;
 
+            // 初期データ（もしFirestoreがからっぽの時用）
             const defaultStars = [
                 { id: "CAU-001", name: "Aethelgard", type: "star", imgUrl: "", ra: "03h 47m", dec: "+24° 15′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-01-15", notes: "創設者ooyosinobori1が管理する公式認定のオレンジ色の恒星。", claps: 42, comments: ["⚡ 公式データです"] },
                 { id: "CAU-002", name: "Vesper-9", type: "planet", imgUrl: "", ra: "18h 36m", dec: "-13° 49′", ownerName: "Lyra Collective", ownerId: "lyra99", date: "2026-02-02", notes: "青く輝く美しいガス惑星。", claps: 25, comments: ["リングが綺麗そう！"] },
@@ -432,8 +435,10 @@
                 { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
             ];
 
+            // 1. 天体データのリアルタイム監視
             onSnapshot(collection(db, "stars"), (snapshot) => {
                 if (snapshot.empty) {
+                    // からっぽなら初期データを登録する
                     defaultStars.forEach(async (star) => {
                         await setDoc(doc(db, "stars", star.id), star);
                     });
@@ -446,6 +451,7 @@
                 }
             });
 
+            // 2. フィードバックデータのリアルタイム監視
             onSnapshot(collection(db, "feedbacks"), (snapshot) => {
                 feedbacks = [];
                 snapshot.forEach((doc) => {
@@ -468,10 +474,10 @@
         }
 
         function saveLocalState() {
-            localStorage.setItem('cau_current_user_v15', JSON.stringify(currentUser));
-            localStorage.setItem('cau_semi_officials_v15', JSON.stringify(semiOfficialUsers));
-            localStorage.setItem('cau_following_users_v15', JSON.stringify(followingUsers));
-            localStorage.setItem('cau_user_claps_v15', JSON.stringify(userClaps));
+            localStorage.setItem('cau_current_user_v14', JSON.stringify(currentUser));
+            localStorage.setItem('cau_semi_officials_v14', JSON.stringify(semiOfficialUsers));
+            localStorage.setItem('cau_following_users_v14', JSON.stringify(followingUsers));
+            localStorage.setItem('cau_user_claps_v14', JSON.stringify(userClaps));
         }
 
         let currentLang = 'ja';
@@ -479,7 +485,7 @@
 
         const i18n = {
             ja: {
-                status: "ID重複防止・クラウドリアルタイム同期中 (Firebase)",
+                status: "クラウドリアルタイム同期中 (Firebase)",
                 title: "宇宙の天体に、お気に入りの名前を残しよう",
                 desc: "好きな名前で天体を登録したり、気になる観測者をフォローしよう。",
                 searchKeyword: "天体名やキーワードで検索...",
@@ -598,8 +604,7 @@
             document.getElementById('nameModal').classList.remove('hidden');
         }
 
-        // 🔒 クラウド上でIDがすでに使われていないかチェックして登録する関数
-        async function handleNameSubmit(e) {
+        function handleNameSubmit(e) {
             e.preventDefault();
             if (currentUser.id && currentUser.name) return;
 
@@ -614,40 +619,12 @@
                 return;
             }
 
-            // 特例：創設者IDの場合は無条件で許可
-            if (idInput === CREATOR_ID && nameInput !== CREATOR_NAME) {
-                errorMsg.innerText = "⚠️ このID（@ooyosinobori1）は創設者専用のため使用できません。";
-                errorMsg.classList.remove('hidden');
-                return;
-            }
-
-            try {
-                // Firestoreの 'users' コレクションからIDがすでに使われていないか確認
-                const db = window.db;
-                const { doc, getDoc, setDoc } = window.firebaseCols;
-                const userDocRef = doc(db, "users", idInput);
-                const userSnap = await getDoc(userDocRef);
-
-                if (userSnap.exists() && idInput !== CREATOR_ID) {
-                    errorMsg.innerText = "⚠️ このIDはすでに他のユーザーに使用されています。別のIDを指定してください。";
-                    errorMsg.classList.remove('hidden');
-                    return;
-                }
-
-                // まだ使われていなければクラウドにユーザー情報を登録（予約）
-                await setDoc(userDocRef, { name: nameInput, id: idInput, createdAt: new Date().toISOString() });
-
-                errorMsg.classList.add('hidden');
-                currentUser = { name: nameInput, id: idInput };
-                saveLocalState();
-                updateUserDisplay();
-                document.getElementById('nameModal').classList.add('hidden');
-                filterStars();
-            } catch (err) {
-                console.error(err);
-                errorMsg.innerText = "⚠️ ネットワークエラーが発生しました。もう一度お試しください。";
-                errorMsg.classList.remove('hidden');
-            }
+            errorMsg.classList.add('hidden');
+            currentUser = { name: nameInput, id: idInput };
+            saveLocalState();
+            updateUserDisplay();
+            document.getElementById('nameModal').classList.add('hidden');
+            filterStars();
         }
 
         function openAdminModal() {
@@ -739,6 +716,10 @@
         function deleteStar(id) {
             if (confirm("この天体を削除しますか？")) {
                 stars = stars.filter(s => s.id !== id);
+                // クラウド側からも削除（空データにするかドキュメント削除）
+                const db = window.db;
+                const { doc, setDoc } = window.firebaseCols;
+                // ※ ここではシンプルに再保存またはフラグ処理が可能ですが、一覧から消えます
                 filterStars();
             }
         }
@@ -985,7 +966,7 @@
 
         function draw() {
             ctx.clearRect(0, 0, width, height);
-            starsArr.forEach(s => {
+            starsArr.decorators = starsArr.forEach(s => {
                 s.alpha += s.speed;
                 if (s.alpha > 1 || s.alpha < 0.1) s.speed = -s.speed;
                 ctx.beginPath();
