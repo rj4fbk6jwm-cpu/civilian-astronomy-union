@@ -219,6 +219,25 @@
         </div>
     </main>
 
+    <!-- ⚡ 公式専用：誰がいいねしたか確認モーダル -->
+    <div id="officialLikersModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
+        <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-amber-500/40 shadow-2xl relative">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="font-serif text-xl font-bold text-amber-300 flex items-center space-x-2">
+                    <span>⚡</span>
+                    <span>いいねしたユーザー一覧（公式限定）</span>
+                </h3>
+                <button onclick="closeOfficialLikersModal()" class="text-slate-400 hover:text-white p-2 rounded-lg bg-cosmos-900/50 border border-cyan-500/20">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <p class="text-xs text-slate-300 mb-4" id="officialLikersStarTitle">天体名</p>
+            <div id="officialLikersListContainer" class="space-y-2 max-h-60 overflow-y-auto text-xs font-mono">
+                <!-- 誰がいいねしたかのリスト -->
+            </div>
+        </div>
+    </div>
+
     <!-- 🔔 通知センター モーダル -->
     <div id="notificationModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
         <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-cyan-500/40 shadow-2xl relative">
@@ -473,7 +492,7 @@
         </div>
     </footer>
 
-    <!-- Application Logic & Firebase Integration with Like System -->
+    <!-- Application Logic & Firebase Integration with Official Likers Inspection -->
     <script>
         const NG_WORDS = ["あほ", "バカ", "ばか", "死ね", "しね", "殺す", "ころす", "unko", "manko", "kintama", "idiot", "stupid", "fuck", "shit", "bitch"];
 
@@ -509,6 +528,7 @@
         let semiOfficialUsers = loadArrayState('cau_semi_officials');
         let followingUsers = loadArrayState('cau_following_users');
         let userClaps = loadArrayState('cau_user_claps');
+        let userLikersMap = loadArrayState('cau_user_likers_map'); // { starId: [userId1, userId2, ...] }
         let notifications = loadArrayState('cau_notifications');
 
         let stars = [];
@@ -521,6 +541,10 @@
 
         function isSemiOfficial(userId) {
             return userId && semiOfficialUsers.includes(userId);
+        }
+
+        function isOfficialOrSemi(userId, userName) {
+            return isMainDeveloper(userId, userName) || isSemiOfficial(userId);
         }
 
         function isFollowing(userId) {
@@ -587,6 +611,7 @@
             localStorage.setItem('cau_semi_officials_v20', JSON.stringify(semiOfficialUsers));
             localStorage.setItem('cau_following_users_v20', JSON.stringify(followingUsers));
             localStorage.setItem('cau_user_claps_v20', JSON.stringify(userClaps));
+            localStorage.setItem('cau_user_likers_map_v20', JSON.stringify(userLikersMap));
             localStorage.setItem('cau_notifications_v20', JSON.stringify(notifications));
         }
 
@@ -644,6 +669,7 @@
                     </div>
                 `).join('');
             }
+            document.getElementById('notificationModal').classList.add('hidden'); // Fix modal toggle
             document.getElementById('notificationModal').classList.remove('hidden');
         }
 
@@ -785,7 +811,7 @@
                 titleEl.innerText = "フォロワー";
                 container.innerHTML = '<div class="text-slate-500 italic text-center py-4">フォロワーはまだいません</div>';
             }
-            document.getElementById('followListModal').classList.add('hidden');
+            document.getElementById('followListModal').classList.remove('hidden');
         }
 
         function closeFollowListModal() {
@@ -824,7 +850,7 @@
                 feedbackBtnNav: "製作者へ連絡",
                 feedbackLinkFooter: "製作者へ改善メッセージを送る",
                 feedbackModalTitle: "製作者へメッセージを送る",
-                feedbackDesc: "サイトの感想や改善点、アイデアを教えてください！",
+                feedbackDesc: "サイトの感想、改善点、アイデアを教えてください！",
                 feedbackSubmit: "メッセージを送信する",
                 successTitle: "登録完了！",
                 successDesc: "新しい天体が宇宙の図鑑に刻まれました！",
@@ -1120,406 +1146,4 @@
             const nameInput = document.getElementById('inputDisplayName').value.trim();
             const idInput = document.getElementById('inputUserId').value.trim().toLowerCase();
             const avatarInput = document.getElementById('inputAvatarUrl').value.trim();
-            const errorMsg = document.getElementById('nameErrorMsg');
-
-            const validIdPattern = /^[a-z0-9_]+$/;
-            if (!nameInput || !idInput || !validIdPattern.test(idInput) || containsNGWord(nameInput) || containsNGWord(idInput)) {
-                errorMsg.innerText = "⚠️ 不適切な言葉が含まれているか、IDの形式が正しくありません（半角英数字のみ）。";
-                errorMsg.classList.remove('hidden');
-                return;
-            }
-
-            if (idInput === CREATOR_ID && nameInput !== CREATOR_NAME) {
-                errorMsg.innerText = "⚠️ このID（@ooyosinobori1）は創設者専用のため使用できません。";
-                errorMsg.classList.add('hidden');
-                return;
-            }
-
-            try {
-                const db = window.db;
-                const { doc, getDoc, setDoc } = window.firebaseCols;
-                const userDocRef = doc(db, "users", idInput);
-                const userSnap = await getDoc(userDocRef);
-
-                if (userSnap.exists() && idInput !== CREATOR_ID) {
-                    errorMsg.innerText = "⚠️ このIDはすでに他のユーザーに使用されています。別のIDを指定してください。";
-                    errorMsg.classList.remove('hidden');
-                    return;
-                }
-
-                await setDoc(userDocRef, { name: nameInput, id: idInput, avatarUrl: avatarInput, createdAt: new Date().toISOString() });
-
-                errorMsg.classList.add('hidden');
-                currentUser = { name: nameInput, id: idInput, avatarUrl: avatarInput };
-                saveLocalState();
-                updateUserDisplay();
-                document.getElementById('nameModal').classList.add('hidden');
-                filterStars();
-            } catch (err) {
-                console.error(err);
-                errorMsg.innerText = "⚠️ ネットワークエラーが発生しました。もう一度お試しください。";
-                errorMsg.classList.remove('hidden');
-            }
-        }
-
-        function openAdminModal() {
-            updateSemiOfficialList();
-            document.getElementById('adminModal').classList.remove('hidden');
-        }
-        function closeAdminModal() {
-            document.getElementById('adminModal').classList.add('hidden');
-        }
-
-        function handleGrantSemiOfficial(e) {
-            e.preventDefault();
-            const targetId = document.getElementById('targetSemiUser').value.trim().toLowerCase();
-            if (targetId && !semiOfficialUsers.includes(targetId)) {
-                semiOfficialUsers.push(targetId);
-                saveLocalState();
-                document.getElementById('targetSemiUser').value = '';
-                updateSemiOfficialList();
-                filterStars();
-                alert(`ID「@${targetId}」のユーザーに準公式マークを付与しました！`);
-            }
-        }
-
-        function updateSemiOfficialList() {
-            const listEl = document.getElementById('semiOfficialList');
-            if (semiOfficialUsers.length === 0) {
-                listEl.innerHTML = '<span class="italic text-slate-500">まだ誰もいません</span>';
-            } else {
-                listEl.innerHTML = semiOfficialUsers.map(u => `<div class="flex justify-between items-center bg-cosmos-900 px-2 py-1 rounded"><span>⭐ @${u}</span><button onclick="removeSemiOfficial('${u}')" class="text-red-400 hover:text-red-300 text-[10px]">削除</button></div>`).join('');
-            }
-        }
-
-        function removeSemiOfficial(id) {
-            semiOfficialUsers = semiOfficialUsers.filter(u => u !== id);
-            saveLocalState();
-            updateSemiOfficialList();
-            filterStars();
-        }
-
-        function addClap(id) {
-            if (!currentUser.id) {
-                openNameModal();
-                return;
-            }
-            if (userClaps.includes(id)) {
-                alert("すでに「いいね」しています！");
-                return;
-            }
-            const target = stars.find(s => s.id === id);
-            if (target) {
-                target.claps = (target.claps || 0) + 1;
-                userClaps.push(id);
-                saveLocalState();
-                saveStarToCloud(target);
-                filterStars();
-            }
-        }
-
-        function addComment(event, id) {
-            event.preventDefault();
-            if (!currentUser.id) {
-                openNameModal();
-                return;
-            }
-            const input = document.getElementById(`comment-input-${id}`);
-            const commentText = input.value.trim();
-            
-            if (containsNGWord(commentText)) {
-                alert("⚠️ 不適切な言葉が含まれているため送信できません。");
-                return;
-            }
-
-            if (commentText) {
-                const target = stars.find(s => s.id === id);
-                if (target) {
-                    if (!target.comments) target.comments = [];
-                    let badge = "";
-                    if (isMainDeveloper(currentUser.id, currentUser.name)) badge = " ⚡";
-                    else if (isSemiOfficial(currentUser.id)) badge = " ⭐";
-
-                    target.comments.push(`${currentUser.name} (@${currentUser.id})${badge}: ${commentText}`);
-                    saveStarToCloud(target);
-                    input.value = '';
-                    filterStars();
-                }
-            }
-        }
-
-        function deleteStar(id) {
-            if (confirm("この天体を削除しますか？")) {
-                stars = stars.filter(s => s.id !== id);
-                filterStars();
-            }
-        }
-
-        function filterByType(type) {
-            currentType = type;
-            ['all', 'star', 'planet', 'nebula', 'blackhole'].forEach(t => {
-                const btn = document.getElementById(`type-${t}`);
-                if (btn) {
-                    if (t === type) {
-                        btn.className = 'px-3 py-1.5 rounded-lg bg-cyan-500 text-cosmos-950 font-bold transition-all';
-                    } else {
-                        btn.className = 'px-3 py-1.5 rounded-lg bg-cosmos-900/80 text-slate-300 hover:text-white border border-cyan-500/20 transition-all';
-                    }
-                }
-            });
-            filterStars();
-        }
-
-        function renderStars(data) {
-            const grid = document.getElementById('starGrid');
-            const noResults = document.getElementById('noResults');
-            const counter = document.getElementById('stats-counter');
-
-            if (counter) counter.innerText = `登録天体: ${data.length}件`;
-
-            if (data.length === 0) {
-                grid.innerHTML = '';
-                noResults.classList.remove('hidden');
-                return;
-            }
-
-            noResults.classList.add('hidden');
-            grid.innerHTML = data.map(star => {
-                const commentsHtml = (star.comments && star.comments.length > 0) 
-                    ? star.comments.map(c => `<div class="bg-cosmos-900/80 px-2.5 py-1 rounded-lg text-[11px] text-slate-300 mb-1 border border-cyan-500/10">💬 ${c}</div>`).join('')
-                    : `<div class="text-[11px] text-slate-500 italic mb-1">まだコメントはありません</div>`;
-
-                const alreadyClapped = userClaps.includes(star.id);
-                const clapBtnClass = alreadyClapped 
-                    ? "w-full py-2 mb-3 rounded-xl bg-cyan-500/20 border border-cyan-500/50 text-cyan-200 text-xs font-mono flex items-center justify-center space-x-2 cursor-default" 
-                    : "w-full py-2 mb-3 rounded-xl bg-cyan-950/50 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-xs font-mono transition-all flex items-center justify-center space-x-2 cursor-pointer";
-                
-                // 「観測したよ／観測済み」を「いいね」に変更
-                const clapBtnText = alreadyClapped ? "❤️ いいね済み" : "🤍 いいね";
-
-                let typeBadge = "⭐ 恒星";
-                if (star.type === 'planet') typeBadge = "🪐 惑星";
-                if (star.type === 'nebula') typeBadge = "🌌 星雲";
-                if (star.type === 'blackhole') typeBadge = "🕳️ ブラックホール";
-
-                const oName = star.ownerName || star.owner || "ゲスト";
-                const oId = star.ownerId || "unknown";
-
-                let ownerDisplay = `<span onclick="openUserProfile('${oId}')" class="text-cyan-400 cursor-pointer hover:underline">${oName} <span class="text-[10px] text-slate-400">(@${oId})</span></span>`;
-                
-                if (isMainDeveloper(oId, oName)) {
-                    ownerDisplay = `<span onclick="openUserProfile('${oId}')" class="text-amber-400 font-bold flex items-center space-x-1 cursor-pointer hover:underline"><span>${oName}</span><span class="text-[10px] text-slate-400">(@${oId})</span><span class="bg-amber-500/20 border border-amber-400/50 text-amber-300 px-1.5 py-0.2 rounded text-[9px]">⚡ OFFICIAL</span></span>`;
-                } else if (isSemiOfficial(oId)) {
-                    ownerDisplay = `<span onclick="openUserProfile('${oId}')" class="text-cyan-300 font-bold flex items-center space-x-1 cursor-pointer hover:underline"><span>${oName}</span><span class="text-[10px] text-slate-400">(@${oId})</span><span class="bg-cyan-500/20 border border-cyan-400/50 text-cyan-200 px-1.5 py-0.2 rounded text-[9px]">⭐ SEMI</span></span>`;
-                }
-
-                let followBtnHtml = '';
-                if (oId !== currentUser.id) {
-                    const following = isFollowing(oId);
-                    const followBtnText = following ? "✓ フォロー中" : "+ フォロー";
-                    const followBtnClass = following 
-                        ? "px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 text-[10px] font-mono" 
-                        : "px-2 py-0.5 rounded bg-cosmos-900 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 text-[10px] font-mono transition-all";
-                    followBtnHtml = `<button onclick="toggleFollow('${oId}')" class="${followBtnClass}">${followBtnText}</button>`;
-                }
-
-                const imgHtml = star.imgUrl ? `<div class="mb-4 h-40 overflow-hidden rounded-xl border border-cyan-500/20"><img src="${star.imgUrl}" alt="${star.name}" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-300" onerror="this.parentElement.style.display='none'"></div>` : '';
-
-                return `
-                <div class="glass-panel rounded-2xl p-6 relative overflow-hidden group hover:border-cyan-400/50 transition-all duration-300 shadow-xl flex flex-col justify-between">
-                    <div class="absolute -right-10 -top-10 w-32 h-32 bg-cyan-500/5 rounded-full blur-2xl group-hover:bg-cyan-500/10 transition-all"></div>
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-xs font-mono text-cyan-400 bg-cyan-950/60 px-2.5 py-1 rounded-lg border border-cyan-500/20">${star.id} (${typeBadge})</span>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-xs font-mono text-slate-400">${star.date}</span>
-                                <button onclick="deleteStar('${star.id}')" class="text-slate-500 hover:text-red-400 text-xs">🗑️</button>
-                            </div>
-                        </div>
-                        <h3 class="font-serif text-2xl font-bold text-white mb-2 group-hover:text-cyan-300 transition-colors">${star.name}</h3>
-                        ${imgHtml}
-                        <p class="text-xs text-slate-300 font-sans mb-4 leading-relaxed">${star.notes}</p>
-                    </div>
-                    <div>
-                        <div class="border-t border-cyan-900/30 pt-4 mt-2 space-y-2 text-xs font-mono mb-3">
-                            <div class="flex justify-between text-slate-400">
-                                <span>RA/DEC:</span>
-                                <span class="text-slate-200">${star.ra} | ${star.dec}</span>
-                            </div>
-                            <div class="flex justify-between items-center text-slate-400">
-                                <span>Owner:</span>
-                                <div class="flex items-center space-x-1.5 truncate max-w-[180px]">
-                                    <span class="truncate" title="${oName}">${ownerDisplay}</span>
-                                    ${followBtnHtml}
-                                </div>
-                            </div>
-                        </div>
-
-                        <button onclick="addClap('${star.id}')" class="${clapBtnClass}">
-                            <span>${clapBtnText}</span>
-                            <span class="bg-cyan-500/30 px-2 py-0.5 rounded-full text-white">${star.claps || 0}</span>
-                        </button>
-
-                        <div class="border-t border-cyan-900/20 pt-3">
-                            <div class="max-h-24 overflow-y-auto mb-2 space-y-1">
-                                ${commentsHtml}
-                            </div>
-                            <form onsubmit="addComment(event, '${star.id}')" class="flex gap-1">
-                                <input type="text" id="comment-input-${star.id}" placeholder="コメントを残す..." class="w-full px-3 py-1.5 rounded-lg glass-input text-xs text-slate-100 placeholder-slate-500 focus:outline-none">
-                                <button type="submit" class="px-3 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-mono whitespace-nowrap">OK</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            `;}).join('');
-        }
-
-        function filterStars() {
-            const searchInput = document.getElementById('searchInput');
-            const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-            const sortMode = document.getElementById('sortSelect').value;
-            
-            let filtered = stars.filter(s => {
-                const oName = s.ownerName || s.owner || "";
-                const oId = s.ownerId || "";
-                const matchesQuery = s.name.toLowerCase().includes(query) ||
-                                     s.id.toLowerCase().includes(query) ||
-                                     oName.toLowerCase().includes(query) ||
-                                     oId.toLowerCase().includes(query) ||
-                                     s.notes.toLowerCase().includes(query);
-                const matchesType = (currentType === 'all') || (s.type === currentType);
-                return matchesQuery && matchesType;
-            });
-
-            if (sortMode === 'popular') {
-                filtered.sort((a, b) => (b.claps || 0) - (a.claps || 0));
-            } else {
-                filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-            }
-
-            renderStars(filtered);
-        }
-
-        function openStarGacha() {
-            if (stars.length === 0) return;
-            const randomStar = stars[Math.floor(Math.random() * stars.length)];
-            document.getElementById('gachaStarName').innerText = `${randomStar.name} (${randomStar.id})`;
-            document.getElementById('gachaStarNotes').innerText = `「${randomStar.notes}」\n(Owner: ${randomStar.ownerName || randomStar.owner})`;
-            document.getElementById('gachaModal').classList.remove('hidden');
-        }
-        function closeStarGacha() { document.getElementById('gachaModal').classList.add('hidden'); }
-
-        function openRegisterModal() {
-            if (!currentUser.id) {
-                openNameModal();
-                return;
-            }
-            document.getElementById('inputOwnerDisplay').value = `${currentUser.name} (@${currentUser.id})`;
-            document.getElementById('registerModal').classList.remove('hidden');
-        }
-        function closeRegisterModal() { document.getElementById('registerModal').classList.add('hidden'); }
-        function closeSuccessModal() { document.getElementById('successModal').classList.add('hidden'); }
-
-        function openFeedbackModal() { document.getElementById('feedbackModal').classList.remove('hidden'); }
-        function closeFeedbackModal() { document.getElementById('feedbackModal').classList.add('hidden'); }
-
-        function handleFeedbackSubmit(e) {
-            e.preventDefault();
-            const msg = document.getElementById('feedbackMessage').value;
-            if (containsNGWord(msg)) {
-                alert("⚠️ 不適切な言葉が含まれているため送信できません。");
-                return;
-            }
-            const fb = { name: currentUser.name || '未設定', msg, date: new Date().toISOString() };
-            saveFeedbackToCloud(fb);
-            closeFeedbackModal();
-            document.getElementById('feedbackMessage').value = '';
-            alert("製作者へメッセージを送信しました！ありがとうございます！✨");
-        }
-
-        function handleRegisterSubmit(e) {
-            e.preventDefault();
-            if (!currentUser.id) {
-                openNameModal();
-                return;
-            }
-            const notesInput = document.getElementById('inputNotes').value;
-            const nameInput = document.getElementById('inputName').value;
-
-            if (containsNGWord(notesInput) || containsNGWord(nameInput)) {
-                alert("⚠️ 不適切な言葉が含まれているため登録できません。");
-                return;
-            }
-
-            const newIdNum = stars.length + 1;
-            const newStar = {
-                id: `CAU-${String(newIdNum).padStart(3, '0')}`,
-                name: nameInput,
-                type: document.getElementById('inputType').value,
-                imgUrl: document.getElementById('inputImgUrl').value.trim(),
-                ra: document.getElementById('inputRA').value,
-                dec: document.getElementById('inputDec').value,
-                ownerName: currentUser.name,
-                ownerId: currentUser.id,
-                date: new Date().toISOString().split('T')[0],
-                notes: notesInput || "New object.",
-                claps: 1,
-                comments: []
-            };
-
-            saveStarToCloud(newStar);
-            userClaps.push(newStar.id);
-            saveLocalState();
-            closeRegisterModal();
-            document.getElementById('starForm').reset();
-            document.getElementById('successModal').classList.remove('hidden');
-        }
-
-        // Canvas Starfield Animation
-        const canvas = document.getElementById('starfield');
-        const ctx = canvas.getContext('2d');
-        let width, height, starsArr = [];
-
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        }
-
-        function initStarfield() {
-            resize();
-            starsArr = Array.from({ length: 150 }, () => ({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                radius: Math.random() * 1.5,
-                alpha: Math.random(),
-                speed: (Math.random() * 0.02 + 0.005) * (Math.random() > 0.5 ? 1 : -1)
-            }));
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, width, height);
-            starsArr.forEach(s => {
-                s.alpha += s.speed;
-                if (s.alpha > 1 || s.alpha < 0.1) s.speed = -s.speed;
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(226, 232, 240, ${s.alpha * 0.75})`;
-                ctx.fill();
-            });
-            requestAnimationFrame(draw);
-        }
-
-        window.addEventListener('resize', resize);
-
-        window.onload = function() {
-            initStarfield();
-            changeLanguage('ja');
-            checkUsername();
-            updateNotificationBadge();
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) searchInput.value = '';
-            draw();
-        };
-    </script>
-</body>
-</html>
+            const errorMsg = document.
