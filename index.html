@@ -232,9 +232,7 @@
                 </button>
             </div>
             <p class="text-xs text-slate-300 mb-4" id="officialLikersStarTitle">天体名</p>
-            <div id="officialLikersListContainer" class="space-y-2 max-h-60 overflow-y-auto text-xs font-mono">
-                <!-- 誰がいいねしたかのリスト -->
-            </div>
+            <div id="officialLikersListContainer" class="space-y-2 max-h-60 overflow-y-auto text-xs font-mono"></div>
         </div>
     </div>
 
@@ -492,7 +490,7 @@
         </div>
     </footer>
 
-    <!-- Application Logic & Firebase Integration with Official Likers Inspection -->
+    <!-- Application Logic & Firebase Integration with Safe Fallback Data -->
     <script>
         const NG_WORDS = ["あほ", "バカ", "ばか", "死ね", "しね", "殺す", "ころす", "unko", "manko", "kintama", "idiot", "stupid", "fuck", "shit", "bitch"];
 
@@ -528,10 +526,20 @@
         let semiOfficialUsers = loadArrayState('cau_semi_officials');
         let followingUsers = loadArrayState('cau_following_users');
         let userClaps = loadArrayState('cau_user_claps');
-        let userLikersMap = loadArrayState('cau_user_likers_map'); // { starId: [userId1, userId2, ...] }
+        let userLikersMap = loadArrayState('cau_user_likers_map');
         let notifications = loadArrayState('cau_notifications');
 
-        let stars = [];
+        // デフォルトの公式星データ（フェイルセーフ用）
+        const defaultStars = [
+            { id: "CAU-001", name: "Aethelgard", type: "star", imgUrl: "", ra: "03h 47m", dec: "+24° 15′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-01-15", notes: "創設者ooyosinobori1が管理する公式認定のオレンジ色の恒星。", claps: 42, comments: ["⚡ 公式データです"] },
+            { id: "CAU-002", name: "Vesper-9", type: "planet", imgUrl: "", ra: "18h 36m", dec: "-13° 49′", ownerName: "Lyra Collective", ownerId: "lyra99", date: "2026-02-02", notes: "青く輝く美しいガス惑星。", claps: 25, comments: ["リングが綺麗そう！"] },
+            { id: "CAU-003", name: "Kaelum Prime", type: "star", imgUrl: "", ra: "22h 11m", dec: "+45° 12′", ownerName: "Astra Guild", ownerId: "astra_g", date: "2026-02-18", notes: "冬の夜空でひときわ輝いていた美しい星。", claps: 19, comments: [] },
+            { id: "CAU-004", name: "Solaria Minor", type: "nebula", imgUrl: "", ra: "06h 45m", dec: "-16° 42′", ownerName: "Sirius Independent", ownerId: "sirius_i", date: "2026-03-10", notes: "色鮮やかなガスが広がる美しい星雲。", claps: 30, comments: ["写真映えしそう！"] },
+            { id: "CAU-005", name: "Zephyria", type: "star", imgUrl: "", ra: "12h 21m", dec: "+57° 01′", ownerName: "Borealis Group", ownerId: "borealis", date: "2026-04-05", notes: "静かな夜の観測中に偶然見つけたお気に入り。", claps: 14, comments: [] },
+            { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
+        ];
+
+        let stars = defaultStars; // 最初からデフォルトを入れておくことで消えるのを防ぐ
         let feedbacks = [];
         let allUsersMap = {};
 
@@ -554,15 +562,6 @@
         window.initFirebaseApp = function() {
             const db = window.db;
             const { collection, onSnapshot, doc, setDoc } = window.firebaseCols;
-
-            const defaultStars = [
-                { id: "CAU-001", name: "Aethelgard", type: "star", imgUrl: "", ra: "03h 47m", dec: "+24° 15′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-01-15", notes: "創設者ooyosinobori1が管理する公式認定のオレンジ色の恒星。", claps: 42, comments: ["⚡ 公式データです"] },
-                { id: "CAU-002", name: "Vesper-9", type: "planet", imgUrl: "", ra: "18h 36m", dec: "-13° 49′", ownerName: "Lyra Collective", ownerId: "lyra99", date: "2026-02-02", notes: "青く輝く美しいガス惑星。", claps: 25, comments: ["リングが綺麗そう！"] },
-                { id: "CAU-003", name: "Kaelum Prime", type: "star", imgUrl: "", ra: "22h 11m", dec: "+45° 12′", ownerName: "Astra Guild", ownerId: "astra_g", date: "2026-02-18", notes: "冬の夜空でひときわ輝いていた美しい星。", claps: 19, comments: [] },
-                { id: "CAU-004", name: "Solaria Minor", type: "nebula", imgUrl: "", ra: "06h 45m", dec: "-16° 42′", ownerName: "Sirius Independent", ownerId: "sirius_i", date: "2026-03-10", notes: "色鮮やかなガスが広がる美しい星雲。", claps: 30, comments: ["写真映えしそう！"] },
-                { id: "CAU-005", name: "Zephyria", type: "star", imgUrl: "", ra: "12h 21m", dec: "+57° 01′", ownerName: "Borealis Group", ownerId: "borealis", date: "2026-04-05", notes: "静かな夜の観測中に偶然見つけたお気に入り。", claps: 14, comments: [] },
-                { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
-            ];
 
             onSnapshot(collection(db, "stars"), (snapshot) => {
                 if (snapshot.empty) {
@@ -669,7 +668,6 @@
                     </div>
                 `).join('');
             }
-            document.getElementById('notificationModal').classList.add('hidden'); // Fix modal toggle
             document.getElementById('notificationModal').classList.remove('hidden');
         }
 
@@ -992,158 +990,4 @@
                 labelImgUrl: "URL de l'image (Facultatif)",
                 labelRA: "Position (AD)",
                 labelDec: "Position (DEC)",
-                labelOwner: "Propriétaire",
-                labelNotes: "Notes / Souvenirs",
-                submitReg: "Enregistrer au catalogue",
-                feedbackBtnNav: "Contact",
-                feedbackLinkFooter: "Envoyer un message",
-                feedbackModalTitle: "Envoyer un message",
-                feedbackDesc: "Partagez vos impressions ou idées !",
-                feedbackSubmit: "Envoyer",
-                successTitle: "Enregistrement réussi !",
-                successDesc: "Votre corps céleste a été gravé !",
-                successBtn: "Super !",
-                noResultsTitle: "Aucun corps trouvé",
-                noResultsDesc: "Aucun résultat ne correspond.",
-                notifText: "Alertes"
-            },
-            de: {
-                status: "ID-Schutz & Cloud-Sync (Firebase)",
-                title: "Hinterlasse deine Lieblingsnamen im Weltall",
-                desc: "Registriere Himmelskörper und folge anderen Beobachtern.",
-                searchKeyword: "Nach Sternenname oder Stichwort suchen...",
-                registerBtn: "Himmelskörper registrieren",
-                gachaBtn: "Heutiges Weltraum-Gacha",
-                highlightTitle: "Empfohlene Beobachtung",
-                highlightDesc: "An einem klaren Abend lohnt sich der Blick zu Aethelgard (CAU-001).",
-                sortNew: "🕒 Neueste",
-                sortPop: "🔥 Beliebt",
-                typeAll: "✨ Alle",
-                typeStar: "⭐ Stern",
-                typePlanet: "🪐 Planet",
-                typeNebula: "🌌 Nebel",
-                typeBH: "🕳️ Schwarzes Loch",
-                modalTitle: "Neuen Himmelskörper registrieren",
-                labelType: "Typ",
-                labelName: "Name",
-                labelImgUrl: "Bild-URL (Optional)",
-                labelRA: "Position (RA)",
-                labelDec: "Position (DEC)",
-                labelOwner: "Besitzer",
-                labelNotes: "Notizen / Erinnerungen",
-                submitReg: "In Katalog eintragen",
-                feedbackBtnNav: "Kontakt",
-                feedbackLinkFooter: "Feedback an Ersteller",
-                feedbackModalTitle: "Nachricht an Ersteller",
-                feedbackDesc: "Teile deine Gedanken oder Ideen mit uns!",
-                feedbackSubmit: "Nachricht senden",
-                successTitle: "Registrierung abgeschlossen!",
-                successDesc: "Dein Himmelskörper wurde eingetragen!",
-                successBtn: "Super!",
-                noResultsTitle: "Keine Himmelskörper gefunden",
-                noResultsDesc: "Keine passenden Einträge gefunden.",
-                notifText: "Hinweise"
-            }
-        };
-
-        function changeLanguage(lang) {
-            currentLang = lang;
-            const t = i18n[lang] || i18n['ja'];
-            document.getElementById('registry-status').innerText = t.status;
-            document.getElementById('hero-title').innerText = t.title;
-            document.getElementById('hero-desc').innerText = t.desc;
-            document.getElementById('searchInput').placeholder = t.searchKeyword;
-            document.getElementById('btn-register').innerText = t.registerBtn;
-            document.getElementById('btn-gacha').innerText = t.gachaBtn;
-            document.getElementById('highlight-title').innerText = t.highlightTitle;
-            document.getElementById('highlight-desc').innerText = t.highlightDesc;
-            document.getElementById('sort-new').innerText = t.sortNew;
-            document.getElementById('sort-pop').innerText = t.sortPop;
-            document.getElementById('type-all').innerText = t.typeAll;
-            document.getElementById('type-star').innerText = t.typeStar;
-            document.getElementById('type-planet').innerText = t.typePlanet;
-            document.getElementById('type-nebula').innerText = t.typeNebula;
-            document.getElementById('type-blackhole').innerText = t.typeBH;
-            document.getElementById('modal-title').innerText = t.modalTitle;
-            document.getElementById('label-type').innerText = t.labelType;
-            document.getElementById('opt-star').innerText = t.typeStar;
-            document.getElementById('opt-planet').innerText = t.typePlanet;
-            document.getElementById('opt-nebula').innerText = t.typeNebula;
-            document.getElementById('opt-bh').innerText = t.typeBH;
-            document.getElementById('label-starname').innerText = t.labelName;
-            document.getElementById('label-imgurl').innerText = t.labelImgUrl;
-            document.getElementById('label-ra').innerText = t.labelRA;
-            document.getElementById('label-dec').innerText = t.labelDec;
-            document.getElementById('label-owner').innerText = t.labelOwner;
-            document.getElementById('label-notes').innerText = t.labelNotes;
-            document.getElementById('btn-submit-registry').innerText = t.submitReg;
-            document.getElementById('nav-feedback-btn').innerText = t.feedbackBtnNav;
-            document.getElementById('footer-feedback-link').innerText = t.footerFeedbackLink;
-            document.getElementById('feedback-modal-title').innerText = t.feedbackModalTitle;
-            document.getElementById('feedback-desc').innerText = t.feedbackDesc;
-            document.getElementById('feedback-submit-btn').innerText = t.feedbackSubmit;
-            document.getElementById('success-title').innerText = t.successTitle;
-            document.getElementById('success-desc').innerText = t.successDesc;
-            document.getElementById('success-btn').innerText = t.successBtn;
-            document.getElementById('no-results-title').innerText = t.noResultsTitle;
-            document.getElementById('no-results-desc').innerText = t.noResultsDesc;
-            const notifTextEl = document.getElementById('nav-notif-text');
-            if (notifTextEl) notifTextEl.innerText = t.notifText;
-            filterStars();
-        }
-
-        function checkUsername() {
-            if (!currentUser.id || !currentUser.name) {
-                openNameModal();
-            } else {
-                updateUserDisplay();
-            }
-        }
-
-        function updateUserDisplay() {
-            const displayEl = document.getElementById('currentUserNameDisplay');
-            const avatarHeaderEl = document.getElementById('headerUserAvatar');
-            const adminBtn = document.getElementById('adminPanelBtn');
-
-            if (!currentUser.id) {
-                displayEl.innerText = '未設定';
-                avatarHeaderEl.innerHTML = '👤';
-                if (adminBtn) adminBtn.classList.add('hidden');
-                return;
-            }
-
-            if (currentUser.avatarUrl) {
-                avatarHeaderEl.innerHTML = `<img src="${currentUser.avatarUrl}" alt="avatar" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='👤'">`;
-            } else {
-                avatarHeaderEl.innerHTML = '👤';
-            }
-
-            if (isMainDeveloper(currentUser.id, currentUser.name)) {
-                displayEl.innerHTML = `${currentUser.name} <span class="text-xs text-slate-400">(@${currentUser.id})</span> <span class="text-amber-400 ml-1 font-bold">⚡ OFFICIAL</span>`;
-                if (adminBtn) adminBtn.classList.remove('hidden');
-            } else if (isSemiOfficial(currentUser.id)) {
-                displayEl.innerHTML = `${currentUser.name} <span class="text-xs text-slate-400">(@${currentUser.id})</span> <span class="text-cyan-300 ml-1 font-bold">⭐ SEMI</span>`;
-                if (adminBtn) adminBtn.classList.add('hidden');
-            } else {
-                displayEl.innerHTML = `${currentUser.name} <span class="text-xs text-slate-400">(@${currentUser.id})</span>`;
-                if (adminBtn) adminBtn.classList.add('hidden');
-            }
-        }
-
-        function openNameModal() {
-            if (currentUser.id && currentUser.name) return;
-            document.getElementById('inputDisplayName').value = currentUser.name || '';
-            document.getElementById('inputUserId').value = currentUser.id || '';
-            document.getElementById('inputAvatarUrl').value = currentUser.avatarUrl || '';
-            document.getElementById('nameErrorMsg').classList.add('hidden');
-            document.getElementById('nameModal').classList.remove('hidden');
-        }
-
-        async function handleNameSubmit(e) {
-            e.preventDefault();
-            if (currentUser.id && currentUser.name) return;
-
-            const nameInput = document.getElementById('inputDisplayName').value.trim();
-            const idInput = document.getElementById('inputUserId').value.trim().toLowerCase();
-            const avatarInput = document.getElementById('inputAvatarUrl').value.trim();
-            const errorMsg = document.
+                labelOwner: "Propri
