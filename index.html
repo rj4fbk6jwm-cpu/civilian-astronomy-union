@@ -106,7 +106,7 @@
                 <!-- 通知センターボタン -->
                 <button onclick="openNotificationModal()" class="relative px-3 py-1.5 rounded-lg bg-cosmos-900 border border-cyan-500/30 text-xs font-mono text-cyan-300 hover:border-cyan-400 transition-all flex items-center space-x-1">
                     <span>🔔</span>
-                    <span class="hidden sm:inline">通知</span>
+                    <span id="nav-notif-text" class="hidden sm:inline">通知</span>
                     <span id="notifBadge" class="absolute -top-1 -right-1 px-1.5 py-0.2 rounded-full bg-cyan-500 text-cosmos-950 text-[9px] font-bold hidden">0</span>
                 </button>
 
@@ -225,7 +225,7 @@
     <div id="notificationModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
         <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-cyan-500/40 shadow-2xl relative">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="font-serif text-xl font-bold text-white flex items-center space-x-2">
+                <h3 id="notif-modal-title" class="font-serif text-xl font-bold text-white flex items-center space-x-2">
                     <span>🔔</span>
                     <span>通知センター</span>
                 </h3>
@@ -257,22 +257,22 @@
                 <p id="profileDisplayId" class="text-xs font-mono text-cyan-400 mb-3">---</p>
                 
                 <div id="avatarEditSection" class="hidden mt-2 p-3 rounded-xl bg-cosmos-900/90 border border-cyan-500/30 text-left">
-                    <label class="block text-[11px] font-mono text-cyan-400 mb-1">アイコン画像URLを変更</label>
+                    <label id="label-avatar-edit" class="block text-[11px] font-mono text-cyan-400 mb-1">アイコン画像URLを変更</label>
                     <div class="flex gap-2">
                         <input type="url" id="inputNewAvatarUrl" placeholder="https://example.com/avatar.jpg" class="w-full px-3 py-2 rounded-lg glass-input text-xs text-slate-100 placeholder-slate-500 focus:outline-none">
-                        <button onclick="saveNewAvatar()" class="px-3 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-mono whitespace-nowrap font-bold">保存</button>
+                        <button onclick="saveNewAvatar()" id="btn-avatar-save" class="px-3 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-mono whitespace-nowrap font-bold">保存</button>
                     </div>
                 </div>
             </div>
 
             <div class="flex justify-around bg-cosmos-900/80 p-3 rounded-xl border border-cyan-500/20 mb-6 text-xs font-mono">
                 <div class="text-center cursor-pointer hover:opacity-80" onclick="openFollowListModal('following')">
-                    <span class="block text-slate-400">フォロー中</span>
+                    <span id="label-following" class="block text-slate-400">フォロー中</span>
                     <span id="profileFollowingCount" class="text-base font-bold text-cyan-300">0</span>
                 </div>
                 <div class="w-px bg-cyan-900/50"></div>
                 <div class="text-center cursor-pointer hover:opacity-80" onclick="openFollowListModal('followers')">
-                    <span class="block text-slate-400">フォロワー</span>
+                    <span id="label-followers" class="block text-slate-400">フォロワー</span>
                     <span id="profileFollowerCount" class="text-base font-bold text-cyan-300">0</span>
                 </div>
             </div>
@@ -280,7 +280,7 @@
             <div id="profileFollowBtnContainer" class="mb-4"></div>
 
             <div class="border-t border-cyan-900/30 pt-4">
-                <h5 class="text-xs font-mono text-cyan-400 mb-2">このユーザーが登録した天体:</h5>
+                <h5 id="label-user-stars" class="text-xs font-mono text-cyan-400 mb-2">このユーザーが登録した天体:</h5>
                 <div id="profileUserStarsList" class="space-y-2 max-h-40 overflow-y-auto text-xs"></div>
             </div>
         </div>
@@ -302,7 +302,7 @@
     <!-- 👤 プロフィール設定モーダル (初回のみ) -->
     <div id="nameModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-lg hidden">
         <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-cyan-500/50 shadow-2xl text-center relative">
-            <div class="inline-block px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[11px] font-mono mb-3">
+            <div id="name-modal-badge" class="inline-block px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[11px] font-mono mb-3">
                 🚀 初期設定のお願い（IDは重複できません）
             </div>
             <h3 class="font-serif text-2xl font-bold text-white mb-2" id="name-modal-title">あなたのプロフィールを設定しよう</h3>
@@ -311,15 +311,15 @@
             </p>
             <form onsubmit="handleNameSubmit(event)" class="space-y-4 text-left">
                 <div>
-                    <label class="block text-xs font-mono text-cyan-400 mb-1">1. 表示名（ニックネーム）</label>
+                    <label id="label-name-field" class="block text-xs font-mono text-cyan-400 mb-1">1. 表示名（ニックネーム）</label>
                     <input type="text" id="inputDisplayName" required placeholder="例: Stargazer" class="w-full px-4 py-2.5 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-mono text-cyan-400 mb-1">2. 固有ID（半角英数字）</label>
+                    <label id="label-id-field" class="block text-xs font-mono text-cyan-400 mb-1">2. 固有ID（半角英数字）</label>
                     <input type="text" id="inputUserId" required pattern="[a-zA-Z0-9_]+" title="半角英数字とアンダーバー(_)のみ使用できます" placeholder="例: user_99" class="w-full px-4 py-2.5 rounded-xl glass-input text-sm text-cyan-300 placeholder-slate-500 focus:outline-none font-mono">
                 </div>
                 <div>
-                    <label class="block text-xs font-mono text-cyan-400 mb-1">3. アイコン画像URL（任意）</label>
+                    <label id="label-avatar-field" class="block text-xs font-mono text-cyan-400 mb-1">3. アイコン画像URL（任意）</label>
                     <input type="url" id="inputAvatarUrl" placeholder="https://example.com/avatar.jpg" class="w-full px-4 py-2.5 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
                 </div>
                 <p id="nameErrorMsg" class="text-xs text-red-400 mt-2 hidden">⚠️ エラーメッセージ</p>
@@ -477,7 +477,7 @@
         </div>
     </footer>
 
-    <!-- Application Logic & Firebase Integration with Auto Migration & Notifications -->
+    <!-- Application Logic & Firebase Integration with Auto Migration, Notifications & Multilingual support -->
     <script>
         const NG_WORDS = ["あほ", "バカ", "ばか", "死ね", "しね", "殺す", "ころす", "unko", "manko", "kintama", "idiot", "stupid", "fuck", "shit", "bitch"];
 
@@ -489,7 +489,6 @@
         const CREATOR_ID = "ooyosinobori1";
         const CREATOR_NAME = "ooyosinobori";
 
-        // 🔄 過去のどのバージョンのストレージキーからでも自動でデータを引き継ぐ移行ロジック
         function loadUserState() {
             for (let i = 20; i >= 1; i--) {
                 const saved = localStorage.getItem(`cau_current_user_v${i}`);
@@ -587,7 +586,6 @@
             await setDoc(doc(db, "feedbacks", fbId), fb);
         }
 
-        // 常に最新のバージョンタグ（v20など）で保存して次回以降も引き継げるようにする
         function saveLocalState() {
             localStorage.setItem('cau_current_user_v20', JSON.stringify(currentUser));
             localStorage.setItem('cau_semi_officials_v20', JSON.stringify(semiOfficialUsers));
@@ -608,7 +606,6 @@
                 followingUsers.splice(index, 1);
             } else {
                 followingUsers.push(targetUserId);
-                // 🔔 フォローされた相手への通知を追加
                 addNotification(targetUserId, `👤 @${currentUser.id} さんにフォローされました！`);
             }
             saveLocalState();
@@ -621,9 +618,7 @@
             }
         }
 
-        // 通知を追加する関数
         function addNotification(targetUserId, message) {
-            // 自分宛ての通知であればリストに追加
             if (currentUser.id === targetUserId) {
                 notifications.unshift({ text: message, date: new Date().toLocaleDateString(), read: false });
                 saveLocalState();
@@ -794,7 +789,7 @@
                 titleEl.innerText = "フォロワー";
                 container.innerHTML = '<div class="text-slate-500 italic text-center py-4">フォロワーはまだいません</div>';
             }
-            document.getElementById('followListModal').classList.remove('hidden');
+            document.getElementById('followListModal').classList.add('hidden');
         }
 
         function closeFollowListModal() {
@@ -807,7 +802,7 @@
         const i18n = {
             ja: {
                 status: "ID重複防止・クラウドリアルタイム同期中 (Firebase)",
-                title: "宇宙の天体に、お気に入りの名前を残そう", // 修正済み
+                title: "宇宙の天体に、お気に入りの名前を残そう",
                 desc: "好きな名前で天体を登録したり、気になる観測者をフォローしよう。",
                 searchKeyword: "天体名やキーワードで検索...",
                 registerBtn: "天体を登録する",
@@ -839,7 +834,193 @@
                 successDesc: "新しい天体が宇宙の図鑑に刻まれました！",
                 successBtn: "やったね！",
                 noResultsTitle: "天体が見つかりませんでした",
-                noResultsDesc: "条件に一致する天体やキーワードが見つかりませんでした。"
+                noResultsDesc: "条件に一致する天体やキーワードが見つかりませんでした。",
+                notifText: "通知"
+            },
+            en: {
+                status: "ID Protection & Real-time Cloud Sync (Firebase)",
+                title: "Leave Your Favorite Names on Celestial Bodies",
+                desc: "Register celestial bodies with your favorite names and follow fellow observers.",
+                searchKeyword: "Search by star name or keyword...",
+                registerBtn: "Register Body",
+                gachaBtn: "Today's Space Gacha",
+                highlightTitle: "Tonight's Recommended Observation",
+                highlightDesc: "On a clear night, take a relaxing look towards Aethelgard (CAU-001).",
+                sortNew: "🕒 Newest",
+                sortPop: "🔥 Popular",
+                typeAll: "✨ All",
+                typeStar: "⭐ Star",
+                typePlanet: "🪐 Planet",
+                typeNebula: "🌌 Nebula",
+                typeBH: "🕳️ Black Hole",
+                modalTitle: "Register a New Celestial Body",
+                labelType: "Type",
+                labelName: "Name",
+                labelImgUrl: "Image URL (Optional)",
+                labelRA: "Position (RA)",
+                labelDec: "Position (DEC)",
+                labelOwner: "Owner",
+                labelNotes: "Notes / Memories",
+                submitReg: "Register to Catalog",
+                feedbackBtnNav: "Contact Creator",
+                feedbackLinkFooter: "Send Feedback to Creator",
+                feedbackModalTitle: "Send Message to Creator",
+                feedbackDesc: "Please share your thoughts, improvements, or ideas!",
+                feedbackSubmit: "Send Message",
+                successTitle: "Registration Complete!",
+                successDesc: "Your celestial body has been etched into the space catalog!",
+                successBtn: "Awesome!",
+                noResultsTitle: "No Celestial Bodies Found",
+                noResultsDesc: "No celestial bodies or keywords matched your criteria.",
+                notifText: "Alerts"
+            },
+            zh: {
+                status: "ID防重复·云端实时同步 (Firebase)",
+                title: "在宇宙天体上留下你最喜欢的名字",
+                desc: "用你喜欢的名字注册天体，或关注你感兴趣的观测者。",
+                searchKeyword: "按天体名称或关键词搜索...",
+                registerBtn: "注册天体",
+                gachaBtn: "今日太空扭蛋",
+                highlightTitle: "今夜推荐观测",
+                highlightDesc: "在空气清澈的夜晚，不妨悠闲地望向Aethelgard（CAU-001）的方向。",
+                sortNew: "🕒 最新",
+                sortPop: "🔥 热门",
+                typeAll: "✨ 全部",
+                typeStar: "⭐ 恒星",
+                typePlanet: "🪐 行星",
+                typeNebula: "🌌 星云",
+                typeBH: "🕳️ 黑洞",
+                modalTitle: "注册新天体",
+                labelType: "类型",
+                labelName: "名称",
+                labelImgUrl: "图片网址（可选）",
+                labelRA: "位置 (赤经 RA)",
+                labelDec: "位置 (赤纬 DEC)",
+                labelOwner: "所有者",
+                labelNotes: "备注 / 回忆",
+                submitReg: "注册到图鉴",
+                feedbackBtnNav: "联系制作人",
+                feedbackLinkFooter: "向制作人发送改进建议",
+                feedbackModalTitle: "发送消息给制作人",
+                feedbackDesc: "请告诉我们您的感想、改进点或创意！",
+                feedbackSubmit: "发送消息",
+                successTitle: "注册完成！",
+                successDesc: "新的天体已被刻入宇宙图鉴中！",
+                successBtn: "太棒了！",
+                noResultsTitle: "未找到天体",
+                noResultsDesc: "没有找到符合条件的天体或关键词。",
+                notifText: "通知"
+            },
+            es: {
+                status: "Protección de ID y Sincronización Cloud (Firebase)",
+                title: "Deja tus nombres favoritos en cuerpos celestes",
+                desc: "Registra cuerpos celestes con tus nombres favoritos y sigue a observadores.",
+                searchKeyword: "Buscar por nombre o palabra clave...",
+                registerBtn: "Registrar Cuerpo",
+                gachaBtn: "Gacha Espacial",
+                highlightTitle: "Observación recomendada",
+                highlightDesc: "En una noche despejada, observa hacia Aethelgard (CAU-001).",
+                sortNew: "🕒 Más reciente",
+                sortPop: "🔥 Popular",
+                typeAll: "✨ Todos",
+                typeStar: "⭐ Estrella",
+                typePlanet: "🪐 Planeta",
+                typeNebula: "🌌 Nebulosa",
+                typeBH: "🕳️ Agujero Negro",
+                modalTitle: "Registrar Nuevo Cuerpo Celeste",
+                labelType: "Tipo",
+                labelName: "Nombre",
+                labelImgUrl: "URL de imagen (Opcional)",
+                labelRA: "Posición (AR)",
+                labelDec: "Posición (DEC)",
+                labelOwner: "Propietario",
+                labelNotes: "Notas / Recuerdos",
+                submitReg: "Registrar",
+                feedbackBtnNav: "Contactar",
+                feedbackLinkFooter: "Enviar comentarios",
+                feedbackModalTitle: "Enviar mensaje al creador",
+                feedbackDesc: "¡Comparte tus opiniones o ideas!",
+                feedbackSubmit: "Enviar mensaje",
+                successTitle: "¡Registro completado!",
+                successDesc: "¡Tu cuerpo celeste ha sido registrado!",
+                successBtn: "¡Genial!",
+                noResultsTitle: "No se encontraron cuerpos",
+                noResultsDesc: "No se encontraron coincidencias.",
+                notifText: "Alertas"
+            },
+            fr: {
+                status: "Protection ID & Sync Cloud (Firebase)",
+                title: "Laissez vos noms favoris sur les corps célestes",
+                desc: "Enregistrez des corps célestes et suivez d'autres observateurs.",
+                searchKeyword: "Rechercher un astre ou mot-clé...",
+                registerBtn: "Enregistrer",
+                gachaBtn: "Gacha Spatial",
+                highlightTitle: "Observation recommandée",
+                highlightDesc: "Par nuit claire, contemplez Aethelgard (CAU-001).",
+                sortNew: "🕒 Plus récent",
+                sortPop: "🔥 Populaire",
+                typeAll: "✨ Tous",
+                typeStar: "⭐ Étoile",
+                typePlanet: "🪐 Planète",
+                typeNebula: "🌌 Nébuleuse",
+                typeBH: "🕳️ Trou Noir",
+                modalTitle: "Enregistrer un nouveau corps",
+                labelType: "Type",
+                labelName: "Nom",
+                labelImgUrl: "URL de l'image (Facultatif)",
+                labelRA: "Position (AD)",
+                labelDec: "Position (DEC)",
+                labelOwner: "Propriétaire",
+                labelNotes: "Notes / Souvenirs",
+                submitReg: "Enregistrer au catalogue",
+                feedbackBtnNav: "Contact",
+                feedbackLinkFooter: "Envoyer un message",
+                feedbackModalTitle: "Envoyer un message",
+                feedbackDesc: "Partagez vos impressions ou idées !",
+                feedbackSubmit: "Envoyer",
+                successTitle: "Enregistrement réussi !",
+                successDesc: "Votre corps céleste a été gravé !",
+                successBtn: "Super !",
+                noResultsTitle: "Aucun corps trouvé",
+                noResultsDesc: "Aucun résultat ne correspond.",
+                notifText: "Alertes"
+            },
+            de: {
+                status: "ID-Schutz & Cloud-Sync (Firebase)",
+                title: "Hinterlasse deine Lieblingsnamen im Weltall",
+                desc: "Registriere Himmelskörper und folge anderen Beobachtern.",
+                searchKeyword: "Nach Sternenname oder Stichwort suchen...",
+                registerBtn: "Himmelskörper registrieren",
+                gachaBtn: "Heutiges Weltraum-Gacha",
+                highlightTitle: "Empfohlene Beobachtung",
+                highlightDesc: "An einem klaren Abend lohnt sich der Blick zu Aethelgard (CAU-001).",
+                sortNew: "🕒 Neueste",
+                sortPop: "🔥 Beliebt",
+                typeAll: "✨ Alle",
+                typeStar: "⭐ Stern",
+                typePlanet: "🪐 Planet",
+                typeNebula: "🌌 Nebel",
+                typeBH: "🕳️ Schwarzes Loch",
+                modalTitle: "Neuen Himmelskörper registrieren",
+                labelType: "Typ",
+                labelName: "Name",
+                labelImgUrl: "Bild-URL (Optional)",
+                labelRA: "Position (RA)",
+                labelDec: "Position (DEC)",
+                labelOwner: "Besitzer",
+                labelNotes: "Notizen / Erinnerungen",
+                submitReg: "In Katalog eintragen",
+                feedbackBtnNav: "Kontakt",
+                feedbackLinkFooter: "Feedback an Ersteller",
+                feedbackModalTitle: "Nachricht an Ersteller",
+                feedbackDesc: "Teile deine Gedanken oder Ideen mit uns!",
+                feedbackSubmit: "Nachricht senden",
+                successTitle: "Registrierung abgeschlossen!",
+                successDesc: "Dein Himmelskörper wurde eingetragen!",
+                successBtn: "Super!",
+                noResultsTitle: "Keine Himmelskörper gefunden",
+                noResultsDesc: "Keine passenden Einträge gefunden.",
+                notifText: "Hinweise"
             }
         };
 
@@ -884,6 +1065,8 @@
             document.getElementById('success-btn').innerText = t.successBtn;
             document.getElementById('no-results-title').innerText = t.noResultsTitle;
             document.getElementById('no-results-desc').innerText = t.noResultsDesc;
+            const notifTextEl = document.getElementById('nav-notif-text');
+            if (notifTextEl) notifTextEl.innerText = t.notifText;
             filterStars();
         }
 
