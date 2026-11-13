@@ -495,7 +495,7 @@
         </div>
     </footer>
 
-    <!-- Application Logic & Firebase Integration with Image Fix & Preview -->
+    <!-- Application Logic & Firebase Integration with Reliable Fallback -->
     <script>
         const NG_WORDS = ["あほ", "バカ", "ばか", "死ね", "しね", "殺す", "ころす", "unko", "manko", "kintama", "idiot", "stupid", "fuck", "shit", "bitch"];
 
@@ -543,6 +543,7 @@
             { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
         ];
 
+        // 常に初期データを保持し、空っぽにならないようにする安全設計
         let stars = defaultStars;
         let feedbacks = [];
         let allUsersMap = {};
@@ -573,11 +574,14 @@
                         await setDoc(doc(db, "stars", star.id), star);
                     });
                 } else {
-                    stars = [];
+                    const fetchedStars = [];
                     snapshot.forEach((doc) => {
-                        stars.push(doc.data());
+                        fetchedStars.push(doc.data());
                     });
-                    filterStars();
+                    if (fetchedStars.length > 0) {
+                        stars = fetchedStars;
+                        filterStars();
+                    }
                 }
             });
 
@@ -619,10 +623,7 @@
         }
 
         function toggleFollow(targetUserId) {
-            if (!currentUser.id) {
-                openNameModal();
-                return;
-            }
+            if (!currentUser.id) { openNameModal(); return; }
             if (targetUserId === currentUser.id) return;
 
             const index = followingUsers.indexOf(targetUserId);
@@ -669,9 +670,7 @@
             document.getElementById('notificationModal').classList.remove('hidden');
         }
 
-        function closeNotificationModal() {
-            document.getElementById('notificationModal').classList.add('hidden');
-        }
+        function closeNotificationModal() { document.getElementById('notificationModal').classList.add('hidden'); }
 
         async function saveNewAvatar() {
             const newUrl = document.getElementById('inputNewAvatarUrl').value.trim();
@@ -1071,7 +1070,6 @@
             filterStars();
         }
 
-        // 登録時の画像プレビュー用関数
         function previewImage(url) {
             const box = document.getElementById('imagePreviewBox');
             const trimmed = url.trim();
@@ -1131,7 +1129,7 @@
                 if (isMainDeveloper(oId, oName)) {
                     ownerDisplay = `<span onclick="openUserProfile('${oId}')" class="text-amber-400 font-bold flex items-center space-x-1 cursor-pointer hover:underline"><span>${oName}</span><span class="text-[10px] text-slate-400">(@${oId})</span><span class="bg-amber-500/20 border border-amber-400/50 text-amber-300 px-1.5 py-0.2 rounded text-[9px]">⚡ OFFICIAL</span></span>`;
                 } else if (isSemiOfficial(oId)) {
-                    ownerDisplay = `<span onclick="openUserProfile('${oId}')" class="text-cyan-300 font-bold flex items-center space-x-1 cursor-pointer hover:underline"><span>${oName}</span><span class="text-[10px] text-slate-400">(@${oId})</span><span class="bg-cyan-500/20 border border-cyan-400/50 text-cyan-200 px-1.5 py-0.2 rounded text-[9px]">⭐ SEMI</span></span>`;
+                    ownerDisplay = `<span onclick="openUserProfile('${oId}')" class="text-cyan-300 font-bold flex items-center space-x-1 cursor-pointer hover:underline"><span>${oName}</span><span class="text-[10px] text-slate-400">(@${oId})</span><span class="bg-cyan-500/20 border border-cyan-500/50 text-cyan-200 px-1.5 py-0.2 rounded text-[9px]">⭐ SEMI</span></span>`;
                 }
 
                 let followBtnHtml = '';
@@ -1213,4 +1211,130 @@
             });
 
             if (sortMode === 'popular') {
-                filtered.sort((a, b) => (b
+                filtered.sort((a, b) => (b.claps || 0) - (a.claps || 0));
+            } else {
+                filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+            }
+
+            renderStars(filtered);
+        }
+
+        function openStarGacha() {
+            if (stars.length === 0) return;
+            const randomStar = stars[Math.floor(Math.random() * stars.length)];
+            document.getElementById('gachaStarName').innerText = `${randomStar.name} (${randomStar.id})`;
+            document.getElementById('gachaStarNotes').innerText = `「${randomStar.notes}」\n(Owner: ${randomStar.ownerName || randomStar.owner})`;
+            document.getElementById('gachaModal').classList.remove('hidden');
+        }
+        function closeStarGacha() { document.getElementById('gachaModal').classList.add('hidden'); }
+
+        function openRegisterModal() {
+            if (!currentUser.id) { openNameModal(); return; }
+            document.getElementById('inputOwnerDisplay').value = `${currentUser.name} (@${currentUser.id})`;
+            document.getElementById('imagePreviewBox').classList.add('hidden');
+            document.getElementById('registerModal').classList.remove('hidden');
+        }
+        function closeRegisterModal() { document.getElementById('registerModal').classList.add('hidden'); }
+        function closeSuccessModal() { document.getElementById('successModal').classList.add('hidden'); }
+
+        function openFeedbackModal() { document.getElementById('feedbackModal').classList.remove('hidden'); }
+        function closeFeedbackModal() { document.getElementById('feedbackModal').classList.add('hidden'); }
+
+        function handleFeedbackSubmit(e) {
+            e.preventDefault();
+            const msg = document.getElementById('feedbackMessage').value;
+            if (containsNGWord(msg)) { alert("⚠️ 不適切な言葉が含まれているため送信できません。"); return; }
+            saveFeedbackToCloud({ name: currentUser.name || '未設定', msg, date: new Date().toISOString() });
+            closeFeedbackModal();
+            document.getElementById('feedbackMessage').value = '';
+            alert("製作者へメッセージを送信しました！ありがとうございます！✨");
+        }
+
+        function handleRegisterSubmit(e) {
+            e.preventDefault();
+            if (!currentUser.id) { openNameModal(); return; }
+            const notesInput = document.getElementById('inputNotes').value;
+            const nameInput = document.getElementById('inputName').value;
+
+            if (containsNGWord(notesInput) || containsNGWord(nameInput)) {
+                alert("⚠️ 不適切な言葉が含まれているため登録できません。");
+                return;
+            }
+
+            const newIdNum = stars.length + 1;
+            const newStar = {
+                id: `CAU-${String(newIdNum).padStart(3, '0')}`,
+                name: nameInput,
+                type: document.getElementById('inputType').value,
+                imgUrl: document.getElementById('inputImgUrl').value.trim(),
+                ra: document.getElementById('inputRA').value,
+                dec: document.getElementById('inputDec').value,
+                ownerName: currentUser.name,
+                ownerId: currentUser.id,
+                date: new Date().toISOString().split('T')[0],
+                notes: notesInput || "New object.",
+                claps: 1,
+                comments: []
+            };
+
+            saveStarToCloud(newStar);
+            userClaps.push(newStar.id);
+            if (!userLikersMap) userLikersMap = {};
+            if (!userLikersMap[newStar.id]) userLikersMap[newStar.id] = [];
+            userLikersMap[newStar.id].push(currentUser.id);
+
+            saveLocalState();
+            closeRegisterModal();
+            document.getElementById('starForm').reset();
+            document.getElementById('successModal').classList.remove('hidden');
+        }
+
+        // Canvas Starfield Animation
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let width, height, starsArr = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+
+        function initStarfield() {
+            resize();
+            starsArr = Array.from({ length: 150 }, () => ({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                radius: Math.random() * 1.5,
+                alpha: Math.random(),
+                speed: (Math.random() * 0.02 + 0.005) * (Math.random() > 0.5 ? 1 : -1)
+            }));
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            starsArr.forEach(s => {
+                s.alpha += s.speed;
+                if (s.alpha > 1 || s.alpha < 0.1) s.speed = -s.speed;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(226, 232, 240, ${s.alpha * 0.75})`;
+                ctx.fill();
+            });
+            requestAnimationFrame(draw);
+        }
+
+        window.addEventListener('resize', resize);
+
+        window.onload = function() {
+            initStarfield();
+            changeLanguage('ja');
+            checkUsername();
+            updateNotificationBadge();
+            renderStars(stars); // 起動した瞬間からデフォルト星を絶対に表示
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = '';
+            draw();
+        };
+    </script>
+</body>
+</html>
