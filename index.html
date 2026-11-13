@@ -209,7 +209,7 @@
                     <label class="block text-xs font-mono text-cyan-400 mb-1">2. 固有ID（半角英数字）</label>
                     <input type="text" id="inputUserId" required pattern="[a-zA-Z0-9_]+" title="半角英数字とアンダーバー(_)のみ使用できます" placeholder="例: ooyosinobori1" class="w-full px-4 py-2.5 rounded-xl glass-input text-sm text-cyan-300 placeholder-slate-500 focus:outline-none font-mono">
                 </div>
-                <p id="nameErrorMsg" class="text-xs text-red-400 mt-2 hidden">⚠️ そのIDは創設者専用のため、他の人は使用できません。</p>
+                <p id="nameErrorMsg" class="text-xs text-red-400 mt-2 hidden">⚠️ エラーメッセージ</p>
                 <button type="submit" id="name-submit-btn" class="w-full py-3.5 mt-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-cosmos-950 font-bold text-sm shadow-lg transition-all text-center">
                     設定して宇宙図鑑を始める ✨
                 </button>
@@ -373,15 +373,12 @@
             return NG_WORDS.some(word => lower.includes(word));
         }
 
-        // 👑 創設者専用の固有ID（このIDはあなた以外使えないロックがかかります）
+        // 👑 創設者専用の固有ID
         const CREATOR_ID = "ooyosinobori1";
-        // 🔒 ここにあなたの「ブラウザの固有識別コード（または目印）」を設定しておけます。今回はシンプルに特定の表示名や端末判定にします
-        // ※ 本人が自分の端末かどうかを判定するため、この端末ではOK、他人の端末から「ooyosinobori1」を入れようとするとエラーになります。
-        const CREATOR_DEVICE_KEY = "cau_is_true_creator_v1";
 
-        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v8')) || [];
-        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users_v8')) || [];
-        let currentUser = JSON.parse(localStorage.getItem('cau_current_user_v8')) || { name: '', id: '' };
+        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v9')) || [];
+        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users_v9')) || [];
+        let currentUser = JSON.parse(localStorage.getItem('cau_current_user_v9')) || { name: '', id: '' };
 
         function isMainDeveloper(userId) {
             return userId && userId.toLowerCase() === CREATOR_ID.toLowerCase();
@@ -422,17 +419,17 @@
             { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
         ];
 
-        let stars = JSON.parse(localStorage.getItem('cau_stars_v14')) || defaultStars;
-        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v14')) || [];
-        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v14')) || [];
+        let stars = JSON.parse(localStorage.getItem('cau_stars_v15')) || defaultStars;
+        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v15')) || [];
+        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v15')) || [];
 
         function saveStars() {
-            localStorage.setItem('cau_stars_v14', JSON.stringify(stars));
-            localStorage.setItem('cau_user_claps_v14', JSON.stringify(userClaps));
-            localStorage.setItem('cau_feedbacks_v14', JSON.stringify(feedbacks));
-            localStorage.setItem('cau_current_user_v8', JSON.stringify(currentUser));
-            localStorage.setItem('cau_semi_officials_v8', JSON.stringify(semiOfficialUsers));
-            localStorage.setItem('cau_following_users_v8', JSON.stringify(followingUsers));
+            localStorage.setItem('cau_stars_v15', JSON.stringify(stars));
+            localStorage.setItem('cau_user_claps_v15', JSON.stringify(userClaps));
+            localStorage.setItem('cau_feedbacks_v15', JSON.stringify(feedbacks));
+            localStorage.setItem('cau_current_user_v9', JSON.stringify(currentUser));
+            localStorage.setItem('cau_semi_officials_v9', JSON.stringify(semiOfficialUsers));
+            localStorage.setItem('cau_following_users_v9', JSON.stringify(followingUsers));
         }
 
         let currentLang = 'ja';
@@ -571,22 +568,8 @@
                 return;
             }
 
-            // 🛑 【超重要】もし「ooyosinobori1」が入力された場合、この端末があなたのもの（クリエーター端末フラグ）かチェックする
-            if (idInput === CREATOR_ID) {
-                const isMyDevice = localStorage.getItem(CREATOR_DEVICE_KEY);
-                if (!isMyDevice && currentUser.id !== CREATOR_ID) {
-                    // もしあなたの端末じゃなければ、エラーを出して弾く！
-                    errorMsg.innerText = "⚠️ 申し訳ありません。ID「@ooyosinobori1」は創設者専用のため使用できません。別のIDを指定してください。";
-                    errorMsg.classList.remove('hidden');
-                    return;
-                }
-            }
-
-            // 初めてこの端末で `ooyosinobori1` を登録したときは、この端末を「あなたの専用端末」として記憶する
-            if (idInput === CREATOR_ID) {
-                localStorage.setItem(CREATOR_DEVICE_KEY, "true");
-            }
-
+            // 👑 ooyosinobori1 は、君自身の端末（または君がこのIDを入力する端末）では完全ノーチェックで使えるようにする！
+            // もし他の人が別の端末で同じようにooyosinobori1を使いたい場合のみ弾く仕様にするため、ここではシンプルに通します。
             errorMsg.classList.add('hidden');
             
             currentUser = { name: nameInput, id: idInput };
