@@ -81,7 +81,7 @@
             <div class="flex items-center space-x-3">
                 <button onclick="openNameModal()" class="flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-cosmos-900 border border-cyan-500/30 text-xs font-mono text-cyan-300">
                     <span>👤</span>
-                    <span id="currentUserNameDisplay">ゲスト</span>
+                    <span id="currentUserNameDisplay">未設定</span>
                 </button>
 
                 <!-- 創設者専用の称号管理ボタン -->
@@ -130,13 +130,13 @@
         <div class="text-center max-w-3xl mx-auto mb-12">
             <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-4">
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑（フォロー機能付き）</span>
+                <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑（ID認証システム）</span>
             </div>
             <h1 id="hero-title" class="font-serif text-4xl sm:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-r from-white via-slate-200 to-cyan-200 bg-clip-text text-transparent">
                 宇宙の天体に、お気に入りの名前を残そう
             </h1>
             <p id="hero-desc" class="text-slate-300 text-base sm:text-lg leading-relaxed">
-                好きな名前で天体を登録したり、気になる観測者をフォローしよう！
+                固有のIDで安全に区別！好きな名前で天体を登録したり、気になる観測者をフォローしよう。
             </p>
         </div>
 
@@ -190,19 +190,29 @@
         </div>
     </main>
 
-    <!-- 👤 ユーザーネーム入力モーダル -->
-    <div id="nameModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md hidden">
-        <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-cyan-500/40 shadow-2xl text-center relative">
-            <div class="text-4xl mb-3">👤</div>
-            <h3 class="font-serif text-2xl font-bold text-white mb-2" id="name-modal-title">あなたの名前（ニックネーム）を教えてね</h3>
-            <p class="text-xs text-slate-300 mb-4" id="name-modal-desc">天体の登録やコメントに表示される名前だよ！</p>
-            <form onsubmit="handleNameSubmit(event)" class="space-y-4">
+    <!-- 👤 強制プロフィール（名前とID）設定モーダル -->
+    <div id="nameModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/95 backdrop-blur-lg hidden">
+        <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 border border-cyan-500/50 shadow-2xl text-center relative">
+            <div class="inline-block px-3 py-1 rounded-full bg-cyan-500/20 border border-cyan-400/40 text-cyan-300 text-[11px] font-mono mb-3">
+                🚀 初期設定のお願い（必須）
+            </div>
+            <h3 class="font-serif text-2xl font-bold text-white mb-2" id="name-modal-title">あなたのプロフィールを設定しよう</h3>
+            <p class="text-xs text-slate-300 mb-5 leading-relaxed" id="name-modal-desc">
+                システムアップデートにより、全員に固有IDの設定をお願いしています！<br>
+                表示名と、他の人と被らない半角英数字のIDを入力してスタートしてね。
+            </p>
+            <form onsubmit="handleNameSubmit(event)" class="space-y-4 text-left">
                 <div>
-                    <input type="text" id="inputUsername" required placeholder="ニックネームを入力..." class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none text-center">
-                    <p id="nameErrorMsg" class="text-xs text-red-400 mt-2 hidden">⚠️ 不適切な言葉が含まれているため、その名前は使用できません。</p>
+                    <label class="block text-xs font-mono text-cyan-400 mb-1">1. 表示名（ニックネーム）</label>
+                    <input type="text" id="inputDisplayName" required placeholder="例: 星空好き" class="w-full px-4 py-2.5 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
                 </div>
-                <button type="submit" id="name-submit-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-cosmos-950 font-bold text-sm shadow-lg transition-all">
-                    決定する
+                <div>
+                    <label class="block text-xs font-mono text-cyan-400 mb-1">2. 固有ID（半角英数字・アンダーバーのみ）</label>
+                    <input type="text" id="inputUserId" required pattern="[a-zA-Z0-9_]+" title="半角英数字とアンダーバー(_)のみ使用できます" placeholder="例: star_lover99" class="w-full px-4 py-2.5 rounded-xl glass-input text-sm text-cyan-300 placeholder-slate-500 focus:outline-none font-mono">
+                </div>
+                <p id="nameErrorMsg" class="text-xs text-red-400 mt-2 hidden">⚠️ 不適切な言葉が含まれているか、IDの形式が正しくありません（半角英数字のみ）。</p>
+                <button type="submit" id="name-submit-btn" class="w-full py-3.5 mt-2 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-cosmos-950 font-bold text-sm shadow-lg transition-all text-center">
+                    設定して宇宙図鑑を始める ✨
                 </button>
             </form>
         </div>
@@ -220,10 +230,10 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-            <p class="text-xs text-slate-300 mb-4">準公式マークを与えたいユーザー名を入力してください。</p>
+            <p class="text-xs text-slate-300 mb-4">準公式マークを与えたいユーザーのIDを入力してください。</p>
             <form onsubmit="handleGrantSemiOfficial(event)" class="space-y-4">
                 <div>
-                    <input type="text" id="targetSemiUser" required placeholder="ユーザー名を入力" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
+                    <input type="text" id="targetSemiUser" required placeholder="ユーザーIDを入力（例: friend123）" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none font-mono">
                 </div>
                 <button type="submit" class="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-sm shadow-lg transition-all">
                     ⭐ 準公式マーク（SEMI-OFFICIAL）を付与する
@@ -278,8 +288,8 @@
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-mono text-cyan-400 uppercase mb-1" id="label-owner">登録者のお名前</label>
-                    <input type="text" id="inputOwner" readonly class="w-full px-4 py-3 rounded-xl glass-input text-sm text-cyan-300 focus:outline-none bg-cosmos-900/60 cursor-not-allowed">
+                    <label class="block text-xs font-mono text-cyan-400 uppercase mb-1" id="label-owner">登録者</label>
+                    <input type="text" id="inputOwnerDisplay" readonly class="w-full px-4 py-3 rounded-xl glass-input text-sm text-cyan-300 focus:outline-none bg-cosmos-900/60 cursor-not-allowed">
                 </div>
                 <div>
                     <label class="block text-xs font-mono text-cyan-400 uppercase mb-1" id="label-notes">ひとことメモ・思い出</label>
@@ -364,59 +374,65 @@
             return NG_WORDS.some(word => lower.includes(word));
         }
 
-        const CREATOR_NAME = "ooyosinobori";
+        // 👑 創設者専用の固有ID
+        const CREATOR_ID = "ooyosinobori1";
 
-        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v2')) || [];
-        // 🤝 フォローしているユーザー名のリスト
-        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users')) || [];
+        let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v4')) || [];
+        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users_v4')) || [];
 
-        function isMainDeveloper(name) {
-            return name && name.toLowerCase() === CREATOR_NAME.toLowerCase();
+        // 新バージョンの保存キー（v4）にすることで、既存ユーザーにも必ず初期設定画面を強制表示する
+        let currentUser = JSON.parse(localStorage.getItem('cau_current_user_v4')) || { name: '', id: '' };
+
+        function isMainDeveloper(userId) {
+            return userId && userId.toLowerCase() === CREATOR_ID.toLowerCase();
         }
 
-        function isSemiOfficial(name) {
-            return name && semiOfficialUsers.includes(name);
+        function isSemiOfficial(userId) {
+            return userId && semiOfficialUsers.includes(userId);
         }
 
-        function isFollowing(name) {
-            return followingUsers.includes(name);
+        function isFollowing(userId) {
+            return followingUsers.includes(userId);
         }
 
-        function toggleFollow(name) {
-            if (name === currentUserName) {
+        function toggleFollow(userId) {
+            if (!currentUser.id) {
+                openNameModal();
+                return;
+            }
+            if (userId === currentUser.id) {
                 alert("自分自身をフォローすることはできません！");
                 return;
             }
-            if (isFollowing(name)) {
-                followingUsers = followingUsers.filter(u => u !== name);
+            if (isFollowing(userId)) {
+                followingUsers = followingUsers.filter(u => u !== userId);
             } else {
-                followingUsers.push(name);
+                followingUsers.push(userId);
             }
             saveStars();
             filterStars();
         }
 
         const defaultStars = [
-            { id: "CAU-001", name: "Aethelgard", type: "star", imgUrl: "", ra: "03h 47m", dec: "+24° 15′", owner: "ooyosinobori", date: "2026-01-15", notes: "創設者ooyosinoboriが管理する公式認定のオレンジ色の恒星。", claps: 42, comments: ["⚡ 公式データです"] },
-            { id: "CAU-002", name: "Vesper-9", type: "planet", imgUrl: "", ra: "18h 36m", dec: "-13° 49′", owner: "Lyra Collective", date: "2026-02-02", notes: "青く輝く美しいガス惑星。", claps: 25, comments: ["リングが綺麗そう！"] },
-            { id: "CAU-003", name: "Kaelum Prime", type: "star", imgUrl: "", ra: "22h 11m", dec: "+45° 12′", owner: "Astra Guild", date: "2026-02-18", notes: "冬の夜空でひときわ輝いていた美しい星。", claps: 19, comments: [] },
-            { id: "CAU-004", name: "Solaria Minor", type: "nebula", imgUrl: "", ra: "06h 45m", dec: "-16° 42′", owner: "Sirius Independent", date: "2026-03-10", notes: "色鮮やかなガスが広がる美しい星雲。", claps: 30, comments: ["写真映えしそう！"] },
-            { id: "CAU-005", name: "Zephyria", type: "star", imgUrl: "", ra: "12h 21m", dec: "+57° 01′", owner: "Borealis Group", date: "2026-04-05", notes: "静かな夜の観測中に偶然見つけたお気に入り。", claps: 14, comments: [] },
-            { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", owner: "ooyosinobori", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
+            { id: "CAU-001", name: "Aethelgard", type: "star", imgUrl: "", ra: "03h 47m", dec: "+24° 15′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-01-15", notes: "創設者ooyosinobori1が管理する公式認定のオレンジ色の恒星。", claps: 42, comments: ["⚡ 公式データです"] },
+            { id: "CAU-002", name: "Vesper-9", type: "planet", imgUrl: "", ra: "18h 36m", dec: "-13° 49′", ownerName: "Lyra Collective", ownerId: "lyra99", date: "2026-02-02", notes: "青く輝く美しいガス惑星。", claps: 25, comments: ["リングが綺麗そう！"] },
+            { id: "CAU-003", name: "Kaelum Prime", type: "star", imgUrl: "", ra: "22h 11m", dec: "+45° 12′", ownerName: "Astra Guild", ownerId: "astra_g", date: "2026-02-18", notes: "冬の夜空でひときわ輝いていた美しい星。", claps: 19, comments: [] },
+            { id: "CAU-004", name: "Solaria Minor", type: "nebula", imgUrl: "", ra: "06h 45m", dec: "-16° 42′", ownerName: "Sirius Independent", ownerId: "sirius_i", date: "2026-03-10", notes: "色鮮やかなガスが広がる美しい星雲。", claps: 30, comments: ["写真映えしそう！"] },
+            { id: "CAU-005", name: "Zephyria", type: "star", imgUrl: "", ra: "12h 21m", dec: "+57° 01′", ownerName: "Borealis Group", ownerId: "borealis", date: "2026-04-05", notes: "静かな夜の観測中に偶然見つけたお気に入り。", claps: 14, comments: [] },
+            { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
         ];
 
-        let stars = JSON.parse(localStorage.getItem('cau_stars_v9')) || defaultStars;
-        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v9')) || [];
-        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v9')) || [];
-        let currentUserName = localStorage.getItem('cau_username') || '';
+        let stars = JSON.parse(localStorage.getItem('cau_stars_v10')) || defaultStars;
+        let userClaps = JSON.parse(localStorage.getItem('cau_user_claps_v10')) || [];
+        let feedbacks = JSON.parse(localStorage.getItem('cau_feedbacks_v10')) || [];
 
         function saveStars() {
-            localStorage.setItem('cau_stars_v9', JSON.stringify(stars));
-            localStorage.setItem('cau_user_claps_v9', JSON.stringify(userClaps));
-            localStorage.setItem('cau_feedbacks_v9', JSON.stringify(feedbacks));
-            localStorage.setItem('cau_username', currentUserName);
-            localStorage.setItem('cau_semi_officials_v2', JSON.stringify(semiOfficialUsers));
-            localStorage.setItem('cau_following_users', JSON.stringify(followingUsers));
+            localStorage.setItem('cau_stars_v10', JSON.stringify(stars));
+            localStorage.setItem('cau_user_claps_v10', JSON.stringify(userClaps));
+            localStorage.setItem('cau_feedbacks_v10', JSON.stringify(feedbacks));
+            localStorage.setItem('cau_current_user_v4', JSON.stringify(currentUser));
+            localStorage.setItem('cau_semi_officials_v4', JSON.stringify(semiOfficialUsers));
+            localStorage.setItem('cau_following_users_v4', JSON.stringify(followingUsers));
         }
 
         let currentLang = 'ja';
@@ -426,7 +442,7 @@
             ja: {
                 status: "みんなで作るオープンな宇宙・星空図鑑",
                 title: "宇宙の天体に、お気に入りの名前を残そう",
-                desc: "好きな名前で天体を登録したり、気になる観測者をフォローしよう！",
+                desc: "固有のIDで安全に区別！好きな名前で天体を登録したり、気になる観測者をフォローしよう。",
                 searchKeyword: "天体名やキーワードで検索...",
                 registerBtn: "天体を登録する",
                 gachaBtn: "今日の宇宙ガチャ",
@@ -445,7 +461,7 @@
                 labelImgUrl: "写真・画像URL（任意）",
                 labelRA: "位置 (赤経 RA)",
                 labelDec: "位置 (赤緯 DEC)",
-                labelOwner: "登録者のお名前",
+                labelOwner: "登録者",
                 labelNotes: "ひとことメモ・思い出",
                 submitReg: "図鑑に登録する",
                 feedbackBtnNav: "製作者へ連絡",
@@ -506,8 +522,8 @@
         }
 
         function checkUsername() {
-            if (!currentUserName) {
-                // 初めて開いた人には自動で名前を入れず、名前入力モーダルを開く
+            // まだ新しいIDシステムで登録されていない人全員に、強制的に設定モーダルを出す
+            if (!currentUser.id || !currentUser.name) {
                 openNameModal();
             } else {
                 updateUserDisplay();
@@ -518,42 +534,45 @@
             const displayEl = document.getElementById('currentUserNameDisplay');
             const adminBtn = document.getElementById('adminPanelBtn');
 
-            if (!currentUserName) {
-                displayEl.innerText = 'ゲスト';
+            if (!currentUser.id) {
+                displayEl.innerText = '未設定';
                 if (adminBtn) adminBtn.classList.add('hidden');
                 return;
             }
 
-            if (isMainDeveloper(currentUserName)) {
-                displayEl.innerHTML = `${currentUserName} <span class="text-amber-400 ml-1 font-bold">⚡ OFFICIAL</span>`;
+            if (isMainDeveloper(currentUser.id)) {
+                displayEl.innerHTML = `${currentUser.name} <span class="text-xs text-slate-400">(@${currentUser.id})</span> <span class="text-amber-400 ml-1 font-bold">⚡ OFFICIAL</span>`;
                 if (adminBtn) adminBtn.classList.remove('hidden');
-            } else if (isSemiOfficial(currentUserName)) {
-                displayEl.innerHTML = `${currentUserName} <span class="text-cyan-300 ml-1 font-bold">⭐ SEMI-OFFICIAL</span>`;
+            } else if (isSemiOfficial(currentUser.id)) {
+                displayEl.innerHTML = `${currentUser.name} <span class="text-xs text-slate-400">(@${currentUser.id})</span> <span class="text-cyan-300 ml-1 font-bold">⭐ SEMI</span>`;
                 if (adminBtn) adminBtn.classList.add('hidden');
             } else {
-                displayEl.innerText = currentUserName;
+                displayEl.innerHTML = `${currentUser.name} <span class="text-xs text-slate-400">(@${currentUser.id})</span>`;
                 if (adminBtn) adminBtn.classList.add('hidden');
             }
         }
 
         function openNameModal() {
-            document.getElementById('inputUsername').value = currentUserName;
+            document.getElementById('inputDisplayName').value = currentUser.name || '';
+            document.getElementById('inputUserId').value = currentUser.id || '';
             document.getElementById('nameErrorMsg').classList.add('hidden');
             document.getElementById('nameModal').classList.remove('hidden');
         }
 
         function handleNameSubmit(e) {
             e.preventDefault();
-            const nameInput = document.getElementById('inputUsername').value.trim();
+            const nameInput = document.getElementById('inputDisplayName').value.trim();
+            const idInput = document.getElementById('inputUserId').value.trim().toLowerCase();
             const errorMsg = document.getElementById('nameErrorMsg');
 
-            if (!nameInput || containsNGWord(nameInput)) {
+            const validIdPattern = /^[a-z0-9_]+$/;
+            if (!nameInput || !idInput || !validIdPattern.test(idInput) || containsNGWord(nameInput) || containsNGWord(idInput)) {
                 errorMsg.classList.remove('hidden');
                 return;
             }
 
             errorMsg.classList.add('hidden');
-            currentUserName = nameInput;
+            currentUser = { name: nameInput, id: idInput };
             saveStars();
             updateUserDisplay();
             document.getElementById('nameModal').classList.add('hidden');
@@ -570,14 +589,14 @@
 
         function handleGrantSemiOfficial(e) {
             e.preventDefault();
-            const targetName = document.getElementById('targetSemiUser').value.trim();
-            if (targetName && !semiOfficialUsers.includes(targetName)) {
-                semiOfficialUsers.push(targetName);
+            const targetId = document.getElementById('targetSemiUser').value.trim().toLowerCase();
+            if (targetId && !semiOfficialUsers.includes(targetId)) {
+                semiOfficialUsers.push(targetId);
                 saveStars();
                 document.getElementById('targetSemiUser').value = '';
                 updateSemiOfficialList();
                 filterStars();
-                alert(`「${targetName}」さんに準公式マークを付与しました！`);
+                alert(`ID「@${targetId}」のユーザーに準公式マークを付与しました！`);
             }
         }
 
@@ -586,18 +605,22 @@
             if (semiOfficialUsers.length === 0) {
                 listEl.innerHTML = '<span class="italic text-slate-500">まだ誰もいません</span>';
             } else {
-                listEl.innerHTML = semiOfficialUsers.map(u => `<div class="flex justify-between items-center bg-cosmos-900 px-2 py-1 rounded"><span>⭐ ${u}</span><button onclick="removeSemiOfficial('${u}')" class="text-red-400 hover:text-red-300 text-[10px]">削除</button></div>`).join('');
+                listEl.innerHTML = semiOfficialUsers.map(u => `<div class="flex justify-between items-center bg-cosmos-900 px-2 py-1 rounded"><span>⭐ @${u}</span><button onclick="removeSemiOfficial('${u}')" class="text-red-400 hover:text-red-300 text-[10px]">削除</button></div>`).join('');
             }
         }
 
-        function removeSemiOfficial(name) {
-            semiOfficialUsers = semiOfficialUsers.filter(u => u !== name);
+        function removeSemiOfficial(id) {
+            semiOfficialUsers = semiOfficialUsers.filter(u => u !== id);
             saveStars();
             updateSemiOfficialList();
             filterStars();
         }
 
         function addClap(id) {
+            if (!currentUser.id) {
+                openNameModal();
+                return;
+            }
             if (userClaps.includes(id)) {
                 alert("すでに「観測したよ」を送っています！");
                 return;
@@ -613,7 +636,7 @@
 
         function addComment(event, id) {
             event.preventDefault();
-            if (!currentUserName) {
+            if (!currentUser.id) {
                 openNameModal();
                 return;
             }
@@ -629,11 +652,11 @@
                 const target = stars.find(s => s.id === id);
                 if (target) {
                     if (!target.comments) target.comments = [];
-                    let commenterDisplay = currentUserName;
-                    if (isMainDeveloper(currentUserName)) commenterDisplay += " ⚡";
-                    else if (isSemiOfficial(currentUserName)) commenterDisplay += " ⭐";
+                    let badge = "";
+                    if (isMainDeveloper(currentUser.id)) badge = " ⚡";
+                    else if (isSemiOfficial(currentUser.id)) badge = " ⭐";
 
-                    target.comments.push(`${commenterDisplay}: ${commentText}`);
+                    target.comments.push(`${currentUser.name} (@${currentUser.id})${badge}: ${commentText}`);
                     saveStars();
                     input.value = '';
                     filterStars();
@@ -695,22 +718,24 @@
                 if (star.type === 'nebula') typeBadge = "🌌 星雲";
                 if (star.type === 'blackhole') typeBadge = "🕳️ ブラックホール";
 
-                let ownerDisplay = `<span class="text-cyan-400">${star.owner}</span>`;
-                if (isMainDeveloper(star.owner)) {
-                    ownerDisplay = `<span class="text-amber-400 font-bold flex items-center space-x-1"><span>${star.owner}</span><span class="bg-amber-500/20 border border-amber-400/50 text-amber-300 px-1.5 py-0.2 rounded text-[9px]">⚡ OFFICIAL</span></span>`;
-                } else if (isSemiOfficial(star.owner)) {
-                    ownerDisplay = `<span class="text-cyan-300 font-bold flex items-center space-x-1"><span>${star.owner}</span><span class="bg-cyan-500/20 border border-cyan-400/50 text-cyan-200 px-1.5 py-0.2 rounded text-[9px]">⭐ SEMI</span></span>`;
+                const oName = star.ownerName || star.owner || "ゲスト";
+                const oId = star.ownerId || "unknown";
+
+                let ownerDisplay = `<span class="text-cyan-400">${oName} <span class="text-[10px] text-slate-400">(@${oId})</span></span>`;
+                if (isMainDeveloper(oId)) {
+                    ownerDisplay = `<span class="text-amber-400 font-bold flex items-center space-x-1"><span>${oName}</span><span class="text-[10px] text-slate-400">(@${oId})</span><span class="bg-amber-500/20 border border-amber-400/50 text-amber-300 px-1.5 py-0.2 rounded text-[9px]">⚡ OFFICIAL</span></span>`;
+                } else if (isSemiOfficial(oId)) {
+                    ownerDisplay = `<span class="text-cyan-300 font-bold flex items-center space-x-1"><span>${oName}</span><span class="text-[10px] text-slate-400">(@${oId})</span><span class="bg-cyan-500/20 border border-cyan-400/50 text-cyan-200 px-1.5 py-0.2 rounded text-[9px]">⭐ SEMI</span></span>`;
                 }
 
-                // 🤝 フォローボタンの構築
                 let followBtnHtml = '';
-                if (star.owner !== currentUserName) {
-                    const following = isFollowing(star.owner);
+                if (oId !== currentUser.id) {
+                    const following = isFollowing(oId);
                     const followBtnText = following ? "✓ フォロー中" : "+ フォロー";
                     const followBtnClass = following 
                         ? "px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 text-[10px] font-mono" 
                         : "px-2 py-0.5 rounded bg-cosmos-900 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 text-[10px] font-mono transition-all";
-                    followBtnHtml = `<button onclick="toggleFollow('${star.owner}')" class="${followBtnClass}">${followBtnText}</button>`;
+                    followBtnHtml = `<button onclick="toggleFollow('${oId}')" class="${followBtnClass}">${followBtnText}</button>`;
                 }
 
                 const imgHtml = star.imgUrl ? `<div class="mb-4 h-40 overflow-hidden rounded-xl border border-cyan-500/20"><img src="${star.imgUrl}" alt="${star.name}" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-300" onerror="this.parentElement.style.display='none'"></div>` : '';
@@ -739,7 +764,7 @@
                             <div class="flex justify-between items-center text-slate-400">
                                 <span>Owner:</span>
                                 <div class="flex items-center space-x-1.5 truncate max-w-[180px]">
-                                    <span class="truncate" title="${star.owner}">${ownerDisplay}</span>
+                                    <span class="truncate" title="${oName}">${ownerDisplay}</span>
                                     ${followBtnHtml}
                                 </div>
                             </div>
@@ -770,9 +795,12 @@
             const sortMode = document.getElementById('sortSelect').value;
             
             let filtered = stars.filter(s => {
+                const oName = s.ownerName || s.owner || "";
+                const oId = s.ownerId || "";
                 const matchesQuery = s.name.toLowerCase().includes(query) ||
                                      s.id.toLowerCase().includes(query) ||
-                                     s.owner.toLowerCase().includes(query) ||
+                                     oName.toLowerCase().includes(query) ||
+                                     oId.toLowerCase().includes(query) ||
                                      s.notes.toLowerCase().includes(query);
                 const matchesType = (currentType === 'all') || (s.type === currentType);
                 return matchesQuery && matchesType;
@@ -791,17 +819,17 @@
             if (stars.length === 0) return;
             const randomStar = stars[Math.floor(Math.random() * stars.length)];
             document.getElementById('gachaStarName').innerText = `${randomStar.name} (${randomStar.id})`;
-            document.getElementById('gachaStarNotes').innerText = `「${randomStar.notes}」\n(Owner: ${randomStar.owner})`;
+            document.getElementById('gachaStarNotes').innerText = `「${randomStar.notes}」\n(Owner: ${randomStar.ownerName || randomStar.owner})`;
             document.getElementById('gachaModal').classList.remove('hidden');
         }
         function closeStarGacha() { document.getElementById('gachaModal').classList.add('hidden'); }
 
         function openRegisterModal() {
-            if (!currentUserName) {
+            if (!currentUser.id) {
                 openNameModal();
                 return;
             }
-            document.getElementById('inputOwner').value = currentUserName;
+            document.getElementById('inputOwnerDisplay').value = `${currentUser.name} (@${currentUser.id})`;
             document.getElementById('registerModal').classList.remove('hidden');
         }
         function closeRegisterModal() { document.getElementById('registerModal').classList.add('hidden'); }
@@ -817,7 +845,7 @@
                 alert("⚠️ 不適切な言葉が含まれているため送信できません。");
                 return;
             }
-            feedbacks.push({ name: currentUserName || 'ゲスト', msg, date: new Date().toISOString() });
+            feedbacks.push({ name: currentUser.name || '未設定', msg, date: new Date().toISOString() });
             saveStars();
             closeFeedbackModal();
             document.getElementById('feedbackMessage').value = '';
@@ -826,6 +854,10 @@
 
         function handleRegisterSubmit(e) {
             e.preventDefault();
+            if (!currentUser.id) {
+                openNameModal();
+                return;
+            }
             const notesInput = document.getElementById('inputNotes').value;
             const nameInput = document.getElementById('inputName').value;
 
@@ -842,7 +874,8 @@
                 imgUrl: document.getElementById('inputImgUrl').value.trim(),
                 ra: document.getElementById('inputRA').value,
                 dec: document.getElementById('inputDec').value,
-                owner: currentUserName,
+                ownerName: currentUser.name,
+                ownerId: currentUser.id,
                 date: new Date().toISOString().split('T')[0],
                 notes: notesInput || "New object.",
                 claps: 1,
