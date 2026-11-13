@@ -399,8 +399,13 @@
                     <input type="text" id="inputName" required placeholder="例: ノヴァ・プライム" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-mono text-cyan-400 uppercase mb-1" id="label-imgurl">写真・画像URL（任意）</label>
-                    <input type="url" id="inputImgUrl" placeholder="https://example.com/image.jpg" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
+                    <label class="block text-xs font-mono text-cyan-400 uppercase mb-1" id="label-imgurl">写真・画像URL（直接画像へのリンク）</label>
+                    <input type="url" id="inputImgUrl" oninput="previewImage(this.value)" placeholder="https://example.com/image.jpg" class="w-full px-4 py-3 rounded-xl glass-input text-sm text-slate-100 placeholder-slate-500 focus:outline-none">
+                    <!-- 画像プレビューエリア -->
+                    <div id="imagePreviewBox" class="mt-2 h-32 rounded-xl border border-cyan-500/30 overflow-hidden bg-cosmos-900 flex items-center justify-center text-xs text-slate-400 hidden">
+                        <span id="previewText">画像プレビュー</span>
+                    </div>
+                    <p class="text-[10px] text-cyan-400/80 mt-1">💡 画像を右クリックして「画像アドレスをコピー」したURL（末尾が .jpg や .png など）を使用してください。</p>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -490,7 +495,7 @@
         </div>
     </footer>
 
-    <!-- Application Logic & Firebase Integration with Safe Fallback Data -->
+    <!-- Application Logic & Firebase Integration with Image Fix & Preview -->
     <script>
         const NG_WORDS = ["あほ", "バカ", "ばか", "死ね", "しね", "殺す", "ころす", "unko", "manko", "kintama", "idiot", "stupid", "fuck", "shit", "bitch"];
 
@@ -529,7 +534,6 @@
         let userLikersMap = loadArrayState('cau_user_likers_map');
         let notifications = loadArrayState('cau_notifications');
 
-        // デフォルトの公式星データ（フェイルセーフ用）
         const defaultStars = [
             { id: "CAU-001", name: "Aethelgard", type: "star", imgUrl: "", ra: "03h 47m", dec: "+24° 15′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-01-15", notes: "創設者ooyosinobori1が管理する公式認定のオレンジ色の恒星。", claps: 42, comments: ["⚡ 公式データです"] },
             { id: "CAU-002", name: "Vesper-9", type: "planet", imgUrl: "", ra: "18h 36m", dec: "-13° 49′", ownerName: "Lyra Collective", ownerId: "lyra99", date: "2026-02-02", notes: "青く輝く美しいガス惑星。", claps: 25, comments: ["リングが綺麗そう！"] },
@@ -539,7 +543,7 @@
             { id: "CAU-006", name: "Gargantua-X", type: "blackhole", imgUrl: "", ra: "17h 45m", dec: "-29° 00′", ownerName: "ooyosinobori", ownerId: "ooyosinobori1", date: "2026-05-20", notes: "周囲の光を飲み込む巨大な公式ブラックホール。", claps: 88, comments: ["⚡ 観測要注意エリア"] }
         ];
 
-        let stars = defaultStars; // 最初からデフォルトを入れておくことで消えるのを防ぐ
+        let stars = defaultStars;
         let feedbacks = [];
         let allUsersMap = {};
 
@@ -630,12 +634,6 @@
             }
             saveLocalState();
             filterStars();
-            if (!document.getElementById('userProfileModal').classList.contains('hidden')) {
-                const currentOpenId = document.getElementById('profileDisplayId').innerText.replace('@', '');
-                if (currentOpenId === targetUserId) {
-                    openUserProfile(targetUserId);
-                }
-            }
         }
 
         function addNotification(targetUserId, message) {
@@ -693,16 +691,12 @@
                 openUserProfile(currentUser.id);
             } catch(e) {
                 console.error(e);
-                alert("アイコンの保存に失敗しました。");
             }
         }
 
         function openUserProfile(userId) {
             if (!userId) {
-                if (!currentUser.id) {
-                    openNameModal();
-                    return;
-                }
+                if (!currentUser.id) { openNameModal(); return; }
                 userId = currentUser.id;
             }
 
@@ -720,9 +714,7 @@
                 uAvatar = allUsersMap[userId].avatarUrl || "";
             } else {
                 const found = stars.find(s => s.ownerId === userId);
-                if (found) {
-                    uName = found.ownerName || found.owner;
-                }
+                if (found) uName = found.ownerName || found.owner;
             }
 
             document.getElementById('profileDisplayName').innerText = uName;
@@ -743,9 +735,7 @@
                 editSection.classList.add('hidden');
             }
 
-            const followingCount = (uId === currentUser.id) ? followingUsers.length : 0;
-            document.getElementById('profileFollowingCount').innerText = followingCount;
-
+            document.getElementById('profileFollowingCount').innerText = (uId === currentUser.id) ? followingUsers.length : 0;
             let followerCount = 0;
             stars.forEach(s => {
                 if (s.ownerId === uId && (s.claps || 0) > 0) followerCount = Math.floor((s.claps || 0) / 2);
@@ -755,11 +745,7 @@
             const btnContainer = document.getElementById('profileFollowBtnContainer');
             if (currentUser.id && uId !== currentUser.id) {
                 const isFav = isFollowing(uId);
-                const btnText = isFav ? "✓ フォロー中" : "+ フォローする";
-                const btnClass = isFav 
-                    ? "w-full py-2.5 rounded-xl bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 text-xs font-mono transition-all" 
-                    : "w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-mono shadow transition-all";
-                btnContainer.innerHTML = `<button onclick="toggleFollow('${uId}')" class="${btnClass}">${btnText}</button>`;
+                btnContainer.innerHTML = `<button onclick="toggleFollow('${uId}'); openUserProfile('${uId}');" class="${isFav ? 'w-full py-2.5 rounded-xl bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 text-xs font-mono' : 'w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-mono shadow'}">${isFav ? '✓ フォロー中' : '+ フォローする'}</button>`;
             } else if (uId !== currentUser.id) {
                 btnContainer.innerHTML = `<button onclick="openNameModal()" class="w-full py-2.5 rounded-xl bg-cyan-600 text-white text-xs font-mono">ログインしてフォローする</button>`;
             } else {
@@ -768,43 +754,29 @@
 
             const userStars = stars.filter(s => (s.ownerId === uId));
             const starsListEl = document.getElementById('profileUserStarsList');
-            if (userStars.length === 0) {
-                starsListEl.innerHTML = '<div class="text-slate-500 italic">登録した天体はありません</div>';
-            } else {
-                starsListEl.innerHTML = userStars.map(s => `
-                    <div class="bg-cosmos-900/80 px-3 py-2 rounded-xl border border-cyan-500/20 flex justify-between items-center">
-                        <div>
-                            <span class="text-cyan-400 font-bold">${s.name}</span>
-                            <span class="text-[10px] text-slate-400 ml-1">(${s.id})</span>
-                        </div>
-                        <span class="text-[10px] text-slate-400">❤️ ${s.claps || 0}</span>
-                    </div>
-                `).join('');
-            }
+            starsListEl.innerHTML = userStars.length === 0 ? '<div class="text-slate-500 italic">登録した天体はありません</div>' : userStars.map(s => `
+                <div class="bg-cosmos-900/80 px-3 py-2 rounded-xl border border-cyan-500/20 flex justify-between items-center">
+                    <div><span class="text-cyan-400 font-bold">${s.name}</span><span class="text-[10px] text-slate-400 ml-1">(${s.id})</span></div>
+                    <span class="text-[10px] text-slate-400">❤️ ${s.claps || 0}</span>
+                </div>
+            `).join('');
 
             document.getElementById('userProfileModal').classList.remove('hidden');
         }
 
-        function closeUserProfileModal() {
-            document.getElementById('userProfileModal').classList.add('hidden');
-        }
+        function closeUserProfileModal() { document.getElementById('userProfileModal').classList.add('hidden'); }
 
         function openFollowListModal(type) {
             const titleEl = document.getElementById('followListTitle');
             const container = document.getElementById('followListContainer');
-            
             if (type === 'following') {
                 titleEl.innerText = "フォロー中のユーザー";
-                if (followingUsers.length === 0) {
-                    container.innerHTML = '<div class="text-slate-500 italic text-center py-4">まだ誰もフォローしていません</div>';
-                } else {
-                    container.innerHTML = followingUsers.map(uid => `
-                        <div class="bg-cosmos-900 px-3 py-2 rounded-xl border border-cyan-500/20 flex justify-between items-center">
-                            <span class="text-cyan-300 font-mono">@${uid}</span>
-                            <button onclick="toggleFollow('${uid}'); openFollowListModal('following');" class="text-[10px] px-2 py-1 rounded bg-red-500/20 text-red-300 border border-red-500/30">解除</button>
-                        </div>
-                    `).join('');
-                }
+                container.innerHTML = followingUsers.length === 0 ? '<div class="text-slate-500 italic text-center py-4">まだ誰もフォローしていません</div>' : followingUsers.map(uid => `
+                    <div class="bg-cosmos-900 px-3 py-2 rounded-xl border border-cyan-500/20 flex justify-between items-center">
+                        <span class="text-cyan-300 font-mono">@${uid}</span>
+                        <button onclick="toggleFollow('${uid}'); openFollowListModal('following');" class="text-[10px] px-2 py-1 rounded bg-red-500/20 text-red-300 border border-red-500/30">解除</button>
+                    </div>
+                `).join('');
             } else {
                 titleEl.innerText = "フォロワー";
                 container.innerHTML = '<div class="text-slate-500 italic text-center py-4">フォロワーはまだいません</div>';
@@ -812,9 +784,7 @@
             document.getElementById('followListModal').classList.remove('hidden');
         }
 
-        function closeFollowListModal() {
-            document.getElementById('followListModal').classList.add('hidden');
-        }
+        function closeFollowListModal() { document.getElementById('followListModal').classList.add('hidden'); }
 
         let currentLang = 'ja';
         let currentType = 'all';
@@ -839,7 +809,7 @@
                 modalTitle: "新しい天体を登録する",
                 labelType: "天体の種類",
                 labelName: "天体名称",
-                labelImgUrl: "写真・画像URL（任意）",
+                labelImgUrl: "写真・画像URL（直接画像へのリンク）",
                 labelRA: "位置 (赤経 RA)",
                 labelDec: "位置 (赤緯 DEC)",
                 labelOwner: "登録者",
@@ -856,191 +826,6 @@
                 noResultsTitle: "天体が見つかりませんでした",
                 noResultsDesc: "条件に一致する天体やキーワードが見つかりませんでした。",
                 notifText: "通知"
-            },
-            en: {
-                status: "ID Protection & Real-time Cloud Sync (Firebase)",
-                title: "Leave Your Favorite Names on Celestial Bodies",
-                desc: "Register celestial bodies with your favorite names and follow fellow observers.",
-                searchKeyword: "Search by star name or keyword...",
-                registerBtn: "Register Body",
-                gachaBtn: "Today's Space Gacha",
-                highlightTitle: "Tonight's Recommended Observation",
-                highlightDesc: "On a clear night, take a relaxing look towards Aethelgard (CAU-001).",
-                sortNew: "🕒 Newest",
-                sortPop: "🔥 Popular",
-                typeAll: "✨ All",
-                typeStar: "⭐ Star",
-                typePlanet: "🪐 Planet",
-                typeNebula: "🌌 Nebula",
-                typeBH: "🕳️ Black Hole",
-                modalTitle: "Register a New Celestial Body",
-                labelType: "Type",
-                labelName: "Name",
-                labelImgUrl: "Image URL (Optional)",
-                labelRA: "Position (RA)",
-                labelDec: "Position (DEC)",
-                labelOwner: "Owner",
-                labelNotes: "Notes / Memories",
-                submitReg: "Register to Catalog",
-                feedbackBtnNav: "Contact Creator",
-                feedbackLinkFooter: "Send Feedback to Creator",
-                feedbackModalTitle: "Send Message to Creator",
-                feedbackDesc: "Please share your thoughts, improvements, or ideas!",
-                feedbackSubmit: "Send Message",
-                successTitle: "Registration Complete!",
-                successDesc: "Your celestial body has been etched into the space catalog!",
-                successBtn: "Awesome!",
-                noResultsTitle: "No Celestial Bodies Found",
-                noResultsDesc: "No celestial bodies or keywords matched your criteria.",
-                notifText: "Alerts"
-            },
-            zh: {
-                status: "ID防重复·云端实时同步 (Firebase)",
-                title: "在宇宙天体上留下你最喜欢的名字",
-                desc: "用你喜欢的名字注册天体，或关注你感兴趣的观测者。",
-                searchKeyword: "按天体名称或关键词搜索...",
-                registerBtn: "注册天体",
-                gachaBtn: "今日太空扭蛋",
-                highlightTitle: "今夜推荐观测",
-                highlightDesc: "在空气清澈的夜晚，不妨悠闲地望向Aethelgard（CAU-001）的方向。",
-                sortNew: "🕒 最新",
-                sortPop: "🔥 热门",
-                typeAll: "✨ 全部",
-                typeStar: "⭐ 恒星",
-                typePlanet: "🪐 行星",
-                typeNebula: "🌌 星云",
-                typeBH: "🕳️ 黑洞",
-                modalTitle: "注册新天体",
-                labelType: "类型",
-                labelName: "名称",
-                labelImgUrl: "图片网址（可选）",
-                labelRA: "位置 (赤经 RA)",
-                labelDec: "位置 (赤纬 DEC)",
-                labelOwner: "所有者",
-                labelNotes: "备注 / 回忆",
-                submitReg: "注册到图鉴",
-                feedbackBtnNav: "联系制作人",
-                feedbackLinkFooter: "向制作人发送改进建议",
-                feedbackModalTitle: "发送消息给制作人",
-                feedbackDesc: "请告诉我们您的感想、改进点或创意！",
-                feedbackSubmit: "发送消息",
-                successTitle: "注册完成！",
-                successDesc: "新的天体已被刻入宇宙图鉴中！",
-                successBtn: "太棒了！",
-                noResultsTitle: "未找到天体",
-                noResultsDesc: "没有找到符合条件的天体或关键词。",
-                notifText: "通知"
-            },
-            es: {
-                status: "Protección de ID y Sincronización Cloud (Firebase)",
-                title: "Deja tus nombres favoritos en cuerpos celestes",
-                desc: "Registra cuerpos celestes con tus nombres favoritos y sigue a observadores.",
-                searchKeyword: "Buscar por nombre o palabra clave...",
-                registerBtn: "Registrar Cuerpo",
-                gachaBtn: "Gacha Espacial",
-                highlightTitle: "Observación recomendada",
-                highlightDesc: "En una noche despejada, observa hacia Aethelgard (CAU-001).",
-                sortNew: "🕒 Más reciente",
-                sortPop: "🔥 Popular",
-                typeAll: "✨ Todos",
-                typeStar: "⭐ Estrella",
-                typePlanet: "🪐 Planeta",
-                typeNebula: "🌌 Nebulosa",
-                typeBH: "🕳️ Agujero Negro",
-                modalTitle: "Registrar Nuevo Cuerpo Celeste",
-                labelType: "Tipo",
-                labelName: "Nombre",
-                labelImgUrl: "URL de imagen (Opcional)",
-                labelRA: "Posición (AR)",
-                labelDec: "Posición (DEC)",
-                labelOwner: "Propietario",
-                labelNotes: "Notas / Recuerdos",
-                submitReg: "Registrar",
-                feedbackBtnNav: "Contactar",
-                feedbackLinkFooter: "Enviar comentarios",
-                feedbackModalTitle: "Enviar mensaje al creador",
-                feedbackDesc: "¡Comparte tus opiniones o ideas!",
-                feedbackSubmit: "Enviar mensaje",
-                successTitle: "¡Registro completado!",
-                successDesc: "¡Tu cuerpo celeste ha sido registrado!",
-                successBtn: "¡Genial!",
-                noResultsTitle: "No se encontraron cuerpos",
-                noResultsDesc: "No se encontraron coincidencias.",
-                notifText: "Alertas"
-            },
-            fr: {
-                status: "Protection ID & Sync Cloud (Firebase)",
-                title: "Laissez vos noms favoris sur les corps célestes",
-                desc: "Enregistrez des corps célestes et suivez d'autres observateurs.",
-                searchKeyword: "Rechercher un astre ou mot-clé...",
-                registerBtn: "Enregistrer",
-                gachaBtn: "Gacha Spatial",
-                highlightTitle: "Observation recommandée",
-                highlightDesc: "Par nuit claire, contemplez Aethelgard (CAU-001).",
-                sortNew: "🕒 Plus récent",
-                sortPop: "🔥 Populaire",
-                typeAll: "✨ Tous",
-                typeStar: "⭐ Étoile",
-                typePlanet: "🪐 Planète",
-                typeNebula: "🌌 Nébuleuse",
-                typeBH: "🕳️ Trou Noir",
-                modalTitle: "Enregistrer un nouveau corps",
-                labelType: "Type",
-                labelName: "Nom",
-                labelImgUrl: "URL de l'image (Facultatif)",
-                labelRA: "Position (AD)",
-                labelDec: "Position (DEC)",
-                labelOwner: "Propriétaire",
-                labelNotes: "Notes / Souvenirs",
-                submitReg: "Enregistrer au catalogue",
-                feedbackBtnNav: "Contact",
-                feedbackLinkFooter: "Envoyer un message",
-                feedbackModalTitle: "Envoyer un message",
-                feedbackDesc: "Partagez vos impressions ou idées !",
-                feedbackSubmit: "Envoyer",
-                successTitle: "Enregistrement réussi !",
-                successDesc: "Votre corps céleste a été gravé !",
-                successBtn: "Super !",
-                noResultsTitle: "Aucun corps trouvé",
-                noResultsDesc: "Aucun résultat ne correspond.",
-                notifText: "Alertes"
-            },
-            de: {
-                status: "ID-Schutz & Cloud-Sync (Firebase)",
-                title: "Hinterlasse deine Lieblingsnamen im Weltall",
-                desc: "Registriere Himmelskörper und folge anderen Beobachtern.",
-                searchKeyword: "Nach Sternenname oder Stichwort suchen...",
-                registerBtn: "Himmelskörper registrieren",
-                gachaBtn: "Heutiges Weltraum-Gacha",
-                highlightTitle: "Empfohlene Beobachtung",
-                highlightDesc: "An einem klaren Abend lohnt sich der Blick zu Aethelgard (CAU-001).",
-                sortNew: "🕒 Neueste",
-                sortPop: "🔥 Beliebt",
-                typeAll: "✨ Alle",
-                typeStar: "⭐ Stern",
-                typePlanet: "🪐 Planet",
-                typeNebula: "🌌 Nebel",
-                typeBH: "🕳️ Schwarzes Loch",
-                modalTitle: "Neuen Himmelskörper registrieren",
-                labelType: "Typ",
-                labelName: "Name",
-                labelImgUrl: "Bild-URL (Optional)",
-                labelRA: "Position (RA)",
-                labelDec: "Position (DEC)",
-                labelOwner: "Besitzer",
-                labelNotes: "Notizen / Erinnerungen",
-                submitReg: "In Katalog eintragen",
-                feedbackBtnNav: "Kontakt",
-                feedbackLinkFooter: "Feedback an Ersteller",
-                feedbackModalTitle: "Nachricht an Ersteller",
-                feedbackDesc: "Teile deine Gedanken oder Ideen mit uns!",
-                feedbackSubmit: "Nachricht senden",
-                successTitle: "Registrierung abgeschlossen!",
-                successDesc: "Dein Himmelskörper wurde eingetragen!",
-                successBtn: "Super!",
-                noResultsTitle: "Keine Himmelskörper gefunden",
-                noResultsDesc: "Keine passenden Einträge gefunden.",
-                notifText: "Hinweise"
             }
         };
 
@@ -1091,12 +876,7 @@
         }
 
         function checkUsername() {
-            if (!currentUser.id || !currentUser.name) {
-                // 初回未設定でもプレースホルダーとして表示させるかそのまま
-                updateUserDisplay();
-            } else {
-                updateUserDisplay();
-            }
+            updateUserDisplay();
         }
 
         function updateUserDisplay() {
@@ -1164,7 +944,7 @@
                 const userSnap = await getDoc(userDocRef);
 
                 if (userSnap.exists() && idInput !== CREATOR_ID && currentUser.id !== idInput) {
-                    errorMsg.innerText = "⚠️ このIDはすでに他のユーザーに使用されています。別のIDを指定してください。";
+                    errorMsg.innerText = "⚠️ このIDはすでに他のユーザーに使用されています。";
                     errorMsg.classList.remove('hidden');
                     return;
                 }
@@ -1178,7 +958,6 @@
                 document.getElementById('nameModal').classList.add('hidden');
                 filterStars();
             } catch (err) {
-                console.error(err);
                 currentUser = { name: nameInput, id: idInput, avatarUrl: avatarInput };
                 saveLocalState();
                 updateUserDisplay();
@@ -1191,9 +970,7 @@
             updateSemiOfficialList();
             document.getElementById('adminModal').classList.remove('hidden');
         }
-        function closeAdminModal() {
-            document.getElementById('adminModal').classList.add('hidden');
-        }
+        function closeAdminModal() { document.getElementById('adminModal').classList.add('hidden'); }
 
         function handleGrantSemiOfficial(e) {
             e.preventDefault();
@@ -1210,11 +987,7 @@
 
         function updateSemiOfficialList() {
             const listEl = document.getElementById('semiOfficialList');
-            if (semiOfficialUsers.length === 0) {
-                listEl.innerHTML = '<span class="italic text-slate-500">まだ誰もいません</span>';
-            } else {
-                listEl.innerHTML = semiOfficialUsers.map(u => `<div class="flex justify-between items-center bg-cosmos-900 px-2 py-1 rounded"><span>⭐ @${u}</span><button onclick="removeSemiOfficial('${u}')" class="text-red-400 hover:text-red-300 text-[10px]">削除</button></div>`).join('');
-            }
+            listEl.innerHTML = semiOfficialUsers.length === 0 ? '<span class="italic text-slate-500">まだ誰もいません</span>' : semiOfficialUsers.map(u => `<div class="flex justify-between items-center bg-cosmos-900 px-2 py-1 rounded"><span>⭐ @${u}</span><button onclick="removeSemiOfficial('${u}')" class="text-red-400 hover:text-red-300 text-[10px]">削除</button></div>`).join('');
         }
 
         function removeSemiOfficial(id) {
@@ -1225,23 +998,15 @@
         }
 
         function addClap(id) {
-            if (!currentUser.id) {
-                openNameModal();
-                return;
-            }
-            if (userClaps.includes(id)) {
-                alert("すでに「いいね」しています！");
-                return;
-            }
+            if (!currentUser.id) { openNameModal(); return; }
+            if (userClaps.includes(id)) { alert("すでに「いいね」しています！"); return; }
             const target = stars.find(s => s.id === id);
             if (target) {
                 target.claps = (target.claps || 0) + 1;
                 userClaps.push(id);
-                
                 if (!userLikersMap) userLikersMap = {};
                 if (!userLikersMap[id]) userLikersMap[id] = [];
                 userLikersMap[id].push(currentUser.id);
-
                 saveLocalState();
                 saveStarToCloud(target);
                 filterStars();
@@ -1256,38 +1021,23 @@
             document.getElementById('officialLikersStarTitle').innerText = `天体: ${starName} (${starId})`;
             const container = document.getElementById('officialLikersListContainer');
             const likers = (userLikersMap && userLikersMap[starId]) ? userLikersMap[starId] : [];
-
-            if (likers.length === 0) {
-                container.innerHTML = '<div class="text-slate-500 italic text-center py-4">まだいいねしたユーザーの記録はありません（初期データ含む）</div>';
-            } else {
-                container.innerHTML = likers.map(uid => `
-                    <div class="bg-cosmos-900 px-3 py-2.5 rounded-xl border border-amber-500/30 flex justify-between items-center">
-                        <span class="text-amber-200 font-mono">@${uid}</span>
-                        <span class="text-[10px] text-slate-400">観測者</span>
-                    </div>
-                `).join('');
-            }
+            container.innerHTML = likers.length === 0 ? '<div class="text-slate-500 italic text-center py-4">まだいいねしたユーザーの記録はありません（初期データ含む）</div>' : likers.map(uid => `
+                <div class="bg-cosmos-900 px-3 py-2.5 rounded-xl border border-amber-500/30 flex justify-between items-center">
+                    <span class="text-amber-200 font-mono">@${uid}</span>
+                    <span class="text-[10px] text-slate-400">観測者</span>
+                </div>
+            `).join('');
             document.getElementById('officialLikersModal').classList.remove('hidden');
         }
 
-        function closeOfficialLikersModal() {
-            document.getElementById('officialLikersModal').classList.add('hidden');
-        }
+        function closeOfficialLikersModal() { document.getElementById('officialLikersModal').classList.add('hidden'); }
 
         function addComment(event, id) {
             event.preventDefault();
-            if (!currentUser.id) {
-                openNameModal();
-                return;
-            }
+            if (!currentUser.id) { openNameModal(); return; }
             const input = document.getElementById(`comment-input-${id}`);
             const commentText = input.value.trim();
-            
-            if (containsNGWord(commentText)) {
-                alert("⚠️ 不適切な言葉が含まれているため送信できません。");
-                return;
-            }
-
+            if (containsNGWord(commentText)) { alert("⚠️ 不適切な言葉が含まれているため送信できません。"); return; }
             if (commentText) {
                 const target = stars.find(s => s.id === id);
                 if (target) {
@@ -1295,7 +1045,6 @@
                     let badge = "";
                     if (isMainDeveloper(currentUser.id, currentUser.name)) badge = " ⚡";
                     else if (isSemiOfficial(currentUser.id)) badge = " ⭐";
-
                     target.comments.push(`${currentUser.name} (@${currentUser.id})${badge}: ${commentText}`);
                     saveStarToCloud(target);
                     input.value = '';
@@ -1316,21 +1065,29 @@
             ['all', 'star', 'planet', 'nebula', 'blackhole'].forEach(t => {
                 const btn = document.getElementById(`type-${t}`);
                 if (btn) {
-                    if (t === type) {
-                        btn.className = 'px-3 py-1.5 rounded-lg bg-cyan-500 text-cosmos-950 font-bold transition-all';
-                    } else {
-                        btn.className = 'px-3 py-1.5 rounded-lg bg-cosmos-900/80 text-slate-300 hover:text-white border border-cyan-500/20 transition-all';
-                    }
+                    btn.className = (t === type) ? 'px-3 py-1.5 rounded-lg bg-cyan-500 text-cosmos-950 font-bold transition-all' : 'px-3 py-1.5 rounded-lg bg-cosmos-900/80 text-slate-300 hover:text-white border border-cyan-500/20 transition-all';
                 }
             });
             filterStars();
+        }
+
+        // 登録時の画像プレビュー用関数
+        function previewImage(url) {
+            const box = document.getElementById('imagePreviewBox');
+            const trimmed = url.trim();
+            if (!trimmed) {
+                box.classList.add('hidden');
+                box.innerHTML = '<span id="previewText">画像プレビュー</span>';
+                return;
+            }
+            box.classList.remove('hidden');
+            box.innerHTML = `<img src="${trimmed}" alt="プレビュー" class="w-full h-full object-cover" onerror="this.outerHTML='<span class=\\'text-red-400 text-xs\\'>⚠️ 画像を読み込めません（直接リンクを確認してください）</span>'">`;
         }
 
         function renderStars(data) {
             const grid = document.getElementById('starGrid');
             const noResults = document.getElementById('noResults');
             const counter = document.getElementById('stats-counter');
-
             if (counter) counter.innerText = `登録天体: ${data.length}件`;
 
             if (data.length === 0) {
@@ -1371,7 +1128,6 @@
                 const oId = star.ownerId || "unknown";
 
                 let ownerDisplay = `<span onclick="openUserProfile('${oId}')" class="text-cyan-400 cursor-pointer hover:underline">${oName} <span class="text-[10px] text-slate-400">(@${oId})</span></span>`;
-                
                 if (isMainDeveloper(oId, oName)) {
                     ownerDisplay = `<span onclick="openUserProfile('${oId}')" class="text-amber-400 font-bold flex items-center space-x-1 cursor-pointer hover:underline"><span>${oName}</span><span class="text-[10px] text-slate-400">(@${oId})</span><span class="bg-amber-500/20 border border-amber-400/50 text-amber-300 px-1.5 py-0.2 rounded text-[9px]">⚡ OFFICIAL</span></span>`;
                 } else if (isSemiOfficial(oId)) {
@@ -1381,14 +1137,14 @@
                 let followBtnHtml = '';
                 if (oId !== currentUser.id) {
                     const following = isFollowing(oId);
-                    const followBtnText = following ? "✓ フォロー中" : "+ フォロー";
-                    const followBtnClass = following 
-                        ? "px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 text-[10px] font-mono" 
-                        : "px-2 py-0.5 rounded bg-cosmos-900 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 text-[10px] font-mono transition-all";
-                    followBtnHtml = `<button onclick="toggleFollow('${oId}')" class="${followBtnClass}">${followBtnText}</button>`;
+                    followBtnHtml = `<button onclick="toggleFollow('${oId}')" class="${following ? 'px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 text-[10px] font-mono' : 'px-2 py-0.5 rounded bg-cosmos-900 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 text-[10px] font-mono transition-all'}">${following ? '✓ フォロー中' : '+ フォロー'}</button>`;
                 }
 
-                const imgHtml = star.imgUrl ? `<div class="mb-4 h-40 overflow-hidden rounded-xl border border-cyan-500/20"><img src="${star.imgUrl}" alt="${star.name}" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-300" onerror="this.parentElement.style.display='none'"></div>` : '';
+                const imgHtml = star.imgUrl ? `
+                    <div class="mb-4 h-40 overflow-hidden rounded-xl border border-cyan-500/20 bg-cosmos-950 flex items-center justify-center">
+                        <img src="${star.imgUrl}" alt="${star.name}" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-300" onerror="this.outerHTML='<div class=\\'text-red-400 text-[11px] p-4 text-center\\'>⚠️ 画像の読み込みに失敗しました<br><span class=\\'text-[9px] text-slate-400\\'>直接画像リンクを確認してください</span></div>'">
+                    </div>
+                ` : '';
 
                 return `
                 <div class="glass-panel rounded-2xl p-6 relative overflow-hidden group hover:border-cyan-400/50 transition-all duration-300 shadow-xl flex flex-col justify-between">
@@ -1457,140 +1213,4 @@
             });
 
             if (sortMode === 'popular') {
-                filtered.sort((a, b) => (b.claps || 0) - (a.claps || 0));
-            } else {
-                filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-            }
-
-            renderStars(filtered);
-        }
-
-        function openStarGacha() {
-            if (stars.length === 0) return;
-            const randomStar = stars[Math.floor(Math.random() * stars.length)];
-            document.getElementById('gachaStarName').innerText = `${randomStar.name} (${randomStar.id})`;
-            document.getElementById('gachaStarNotes').innerText = `「${randomStar.notes}」\n(Owner: ${randomStar.ownerName || randomStar.owner})`;
-            document.getElementById('gachaModal').classList.remove('hidden');
-        }
-        function closeStarGacha() { document.getElementById('gachaModal').classList.add('hidden'); }
-
-        function openRegisterModal() {
-            if (!currentUser.id) {
-                openNameModal();
-                return;
-            }
-            document.getElementById('inputOwnerDisplay').value = `${currentUser.name} (@${currentUser.id})`;
-            document.getElementById('registerModal').classList.remove('hidden');
-        }
-        function closeRegisterModal() { document.getElementById('registerModal').classList.add('hidden'); }
-        function closeSuccessModal() { document.getElementById('successModal').classList.add('hidden'); }
-
-        function openFeedbackModal() { document.getElementById('feedbackModal').classList.remove('hidden'); }
-        function closeFeedbackModal() { document.getElementById('feedbackModal').classList.add('hidden'); }
-
-        function handleFeedbackSubmit(e) {
-            e.preventDefault();
-            const msg = document.getElementById('feedbackMessage').value;
-            if (containsNGWord(msg)) {
-                alert("⚠️ 不適切な言葉が含まれているため送信できません。");
-                return;
-            }
-            const fb = { name: currentUser.name || '未設定', msg, date: new Date().toISOString() };
-            saveFeedbackToCloud(fb);
-            closeFeedbackModal();
-            document.getElementById('feedbackMessage').value = '';
-            alert("製作者へメッセージを送信しました！ありがとうございます！✨");
-        }
-
-        function handleRegisterSubmit(e) {
-            e.preventDefault();
-            if (!currentUser.id) {
-                openNameModal();
-                return;
-            }
-            const notesInput = document.getElementById('inputNotes').value;
-            const nameInput = document.getElementById('inputName').value;
-
-            if (containsNGWord(notesInput) || containsNGWord(nameInput)) {
-                alert("⚠️ 不適切な言葉が含まれているため登録できません。");
-                return;
-            }
-
-            const newIdNum = stars.length + 1;
-            const newStar = {
-                id: `CAU-${String(newIdNum).padStart(3, '0')}`,
-                name: nameInput,
-                type: document.getElementById('inputType').value,
-                imgUrl: document.getElementById('inputImgUrl').value.trim(),
-                ra: document.getElementById('inputRA').value,
-                dec: document.getElementById('inputDec').value,
-                ownerName: currentUser.name,
-                ownerId: currentUser.id,
-                date: new Date().toISOString().split('T')[0],
-                notes: notesInput || "New object.",
-                claps: 1,
-                comments: []
-            };
-
-            saveStarToCloud(newStar);
-            userClaps.push(newStar.id);
-            
-            if (!userLikersMap) userLikersMap = {};
-            if (!userLikersMap[newStar.id]) userLikersMap[newStar.id] = [];
-            userLikersMap[newStar.id].push(currentUser.id);
-
-            saveLocalState();
-            closeRegisterModal();
-            document.getElementById('starForm').reset();
-            document.getElementById('successModal').classList.remove('hidden');
-        }
-
-        // Canvas Starfield Animation
-        const canvas = document.getElementById('starfield');
-        const ctx = canvas.getContext('2d');
-        let width, height, starsArr = [];
-
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        }
-
-        function initStarfield() {
-            resize();
-            starsArr = Array.from({ length: 150 }, () => ({
-                x: Math.random() * width,
-                y: Math.random() * height,
-                radius: Math.random() * 1.5,
-                alpha: Math.random(),
-                speed: (Math.random() * 0.02 + 0.005) * (Math.random() > 0.5 ? 1 : -1)
-            }));
-        }
-
-        function draw() {
-            ctx.clearRect(0, 0, width, height);
-            starsArr.forEach(s => {
-                s.alpha += s.speed;
-                if (s.alpha > 1 || s.alpha < 0.1) s.speed = -s.speed;
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(226, 232, 240, ${s.alpha * 0.75})`;
-                ctx.fill();
-            });
-            requestAnimationFrame(draw);
-        }
-
-        window.addEventListener('resize', resize);
-
-        window.onload = function() {
-            initStarfield();
-            changeLanguage('ja');
-            checkUsername();
-            updateNotificationBadge();
-            renderStars(stars); // 起動時に即座にデフォルト星を表示
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) searchInput.value = '';
-            draw();
-        };
-    </script>
-</body>
-</html>
+                filtered.sort((a, b) => (b
