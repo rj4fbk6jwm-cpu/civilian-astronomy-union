@@ -130,13 +130,13 @@
         <div class="text-center max-w-3xl mx-auto mb-12">
             <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-mono mb-4">
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-                <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑（創設者自動公式システム）</span>
+                <span id="registry-status">みんなで作るオープンな宇宙・星空図鑑（フォロー機能付き）</span>
             </div>
             <h1 id="hero-title" class="font-serif text-4xl sm:text-5xl font-bold tracking-tight mb-4 bg-gradient-to-r from-white via-slate-200 to-cyan-200 bg-clip-text text-transparent">
                 宇宙の天体に、お気に入りの名前を残そう
             </h1>
             <p id="hero-desc" class="text-slate-300 text-base sm:text-lg leading-relaxed">
-                最初にooyosinoboriと設定したあなたに公式マーク！デバイスに保存され消えません。
+                最初にooyosinoboriと設定したあなたに公式マーク！気になる観測者をフォローしよう。
             </p>
         </div>
 
@@ -367,6 +367,8 @@
         const CREATOR_NAME = "ooyosinobori";
 
         let semiOfficialUsers = JSON.parse(localStorage.getItem('cau_semi_officials_v2')) || [];
+        // 🤝 フォローしているユーザー名のリスト
+        let followingUsers = JSON.parse(localStorage.getItem('cau_following_users')) || [];
 
         function isMainDeveloper(name) {
             return name && name.toLowerCase() === CREATOR_NAME.toLowerCase();
@@ -374,6 +376,24 @@
 
         function isSemiOfficial(name) {
             return name && semiOfficialUsers.includes(name);
+        }
+
+        function isFollowing(name) {
+            return followingUsers.includes(name);
+        }
+
+        function toggleFollow(name) {
+            if (name === currentUserName) {
+                alert("自分自身をフォローすることはできません！");
+                return;
+            }
+            if (isFollowing(name)) {
+                followingUsers = followingUsers.filter(u => u !== name);
+            } else {
+                followingUsers.push(name);
+            }
+            saveStars();
+            filterStars();
         }
 
         const defaultStars = [
@@ -396,6 +416,7 @@
             localStorage.setItem('cau_feedbacks_v9', JSON.stringify(feedbacks));
             localStorage.setItem('cau_username', currentUserName);
             localStorage.setItem('cau_semi_officials_v2', JSON.stringify(semiOfficialUsers));
+            localStorage.setItem('cau_following_users', JSON.stringify(followingUsers));
         }
 
         let currentLang = 'ja';
@@ -405,7 +426,7 @@
             ja: {
                 status: "みんなで作るオープンな宇宙・星空図鑑",
                 title: "宇宙の天体に、お気に入りの名前を残そう",
-                desc: "最初にooyosinoboriと設定したあなたに公式マーク！デバイスに保存され消えません。",
+                desc: "最初にooyosinoboriと設定したあなたに公式マーク！気になる観測者をフォローしよう。",
                 searchKeyword: "天体名やキーワードで検索...",
                 registerBtn: "天体を登録する",
                 gachaBtn: "今日の宇宙ガチャ",
@@ -670,6 +691,17 @@
                     ownerDisplay = `<span class="text-cyan-300 font-bold flex items-center space-x-1"><span>${star.owner}</span><span class="bg-cyan-500/20 border border-cyan-400/50 text-cyan-200 px-1.5 py-0.2 rounded text-[9px]">⭐ SEMI</span></span>`;
                 }
 
+                // 🤝 フォローボタンの構築
+                let followBtnHtml = '';
+                if (star.owner !== currentUserName) {
+                    const following = isFollowing(star.owner);
+                    const followBtnText = following ? "✓ フォロー中" : "+ フォロー";
+                    const followBtnClass = following 
+                        ? "px-2 py-0.5 rounded bg-cyan-500/20 border border-cyan-400/50 text-cyan-300 text-[10px] font-mono" 
+                        : "px-2 py-0.5 rounded bg-cosmos-900 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 text-[10px] font-mono transition-all";
+                    followBtnHtml = `<button onclick="toggleFollow('${star.owner}')" class="${followBtnClass}">${followBtnText}</button>`;
+                }
+
                 const imgHtml = star.imgUrl ? `<div class="mb-4 h-40 overflow-hidden rounded-xl border border-cyan-500/20"><img src="${star.imgUrl}" alt="${star.name}" class="w-full h-full object-cover group-hover:scale-105 transition-all duration-300" onerror="this.parentElement.style.display='none'"></div>` : '';
 
                 return `
@@ -695,7 +727,10 @@
                             </div>
                             <div class="flex justify-between items-center text-slate-400">
                                 <span>Owner:</span>
-                                <span class="truncate max-w-[160px]" title="${star.owner}">${ownerDisplay}</span>
+                                <div class="flex items-center space-x-1.5 truncate max-w-[160px]">
+                                    <span class="truncate" title="${star.owner}">${ownerDisplay}</span>
+                                    ${followBtnHtml}
+                                </div>
                             </div>
                         </div>
 
@@ -834,7 +869,7 @@
 
         function draw() {
             ctx.clearRect(0, 0, width, height);
-            starsArr.forEach(s => {
+            starsArr.s(s => {
                 s.alpha += s.speed;
                 if (s.alpha > 1 || s.alpha < 0.1) s.speed = -s.speed;
                 ctx.beginPath();
